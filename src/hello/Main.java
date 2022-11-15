@@ -11,33 +11,40 @@ public class Main {
         int[] a = new int[n];
         StringTokenizer st = new StringTokenizer(bf.readLine());
         for (int i = 0; i < n; i++) {
-            a[i] = Integer.parseInt(st.nextToken());
+            a[i] = Integer.parseInt((st.nextToken()));
         }
 
-        Stack<Integer> stack = new Stack<>();
-        stack.push(0);
+        Arrays.sort(a);
 
-        for (int i = 1; i < n; i++) {
-            while (!stack.isEmpty()) {
-                int now = a[i];
-                int pre = a[stack.peek()];
-                if (now > pre) {
-                    a[stack.pop()] = now;
-                } else break;
+        int lt=0; int rt=n-1;
+        int min = Integer.MAX_VALUE;
+        int minX=0; int minY = 0;
+        while (rt > lt) {
+            int sum = a[lt] + a[rt];
+            int abs = Math.abs(sum);
+            if (sum == 0) {
+                minX = lt; minY = rt;
+                break;
+            } else if (sum > 0) {
+                if (abs < min) {
+                    min = abs;
+                    minX = lt; minY = rt;
+                }
+                rt--;
+            } else {
+                if (abs < min) {
+                    min = abs;
+                    minX = lt; minY = rt;
+                }
+                lt++;
             }
-            stack.push(i);
-        }
-        while (!stack.isEmpty()) {
-            int pop = stack.pop();
-            a[pop] = -1;
         }
 
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-        for (int i = 0; i < n; i++) {
-            String s = String.valueOf(a[i]);
-            bw.write(s + " ");
-        }
-        bw.close();
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));//선언
+        String one = String.valueOf(a[minX]);
+        String two = String.valueOf(a[minY]);
+        bw.write(one + " " + two);
         bf.close();
+        bw.close();
     }
 }
