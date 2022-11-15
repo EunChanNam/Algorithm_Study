@@ -14,36 +14,33 @@ public class Main {
             a[i] = Integer.parseInt((st.nextToken()));
         }
 
-        Arrays.sort(a);
-
         int lt=0; int rt=n-1;
         int min = Integer.MAX_VALUE;
-        int minX=0; int minY = 0;
+        int realMin = Integer.MAX_VALUE;
         while (rt > lt) {
             int sum = a[lt] + a[rt];
             int abs = Math.abs(sum);
             if (sum == 0) {
-                minX = lt; minY = rt;
+                realMin = 0;
                 break;
             } else if (sum > 0) {
                 if (abs < min) {
                     min = abs;
-                    minX = lt; minY = rt;
+                    realMin = sum;
                 }
                 rt--;
             } else {
                 if (abs < min) {
                     min = abs;
-                    minX = lt; minY = rt;
+                    realMin = sum;
                 }
                 lt++;
             }
         }
 
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));//선언
-        String one = String.valueOf(a[minX]);
-        String two = String.valueOf(a[minY]);
-        bw.write(one + " " + two);
+        String ret = String.valueOf(realMin);
+        bw.write(ret);
         bf.close();
         bw.close();
     }
