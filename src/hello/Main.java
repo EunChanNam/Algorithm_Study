@@ -3,45 +3,45 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
+    static int n;
+    static int[] c;
+    static int m;
+    static int answer = Integer.MAX_VALUE;
+    static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
-    public static void main(String[] args) throws IOException {
-        BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
-
-        int n = Integer.parseInt(bf.readLine());
-        int[] a = new int[n];
-        StringTokenizer st = new StringTokenizer(bf.readLine());
-        for (int i = 0; i < n; i++) {
-            a[i] = Integer.parseInt((st.nextToken()));
-        }
-
-        int lt=0; int rt=n-1;
-        int min = Integer.MAX_VALUE;
-        int realMin = Integer.MAX_VALUE;
-        while (rt > lt) {
-            int sum = a[lt] + a[rt];
-            int abs = Math.abs(sum);
-            if (sum == 0) {
-                realMin = 0;
-                break;
-            } else if (sum > 0) {
-                if (abs < min) {
-                    min = abs;
-                    realMin = sum;
-                }
-                rt--;
-            } else {
-                if (abs < min) {
-                    min = abs;
-                    realMin = sum;
-                }
-                lt++;
+    static void dfs(int cnt, int total) {
+        for (int i = n - 1; i >= 0; i--) {
+            int nextTotal = total + c[i];
+            if (nextTotal > m) continue;
+            if (nextTotal == m) {
+                Main.answer = Math.min(Main.answer, cnt + 1);
+                return;
+            }
+            dfs(cnt + 1, nextTotal);
+            if (i == n - 1) {
+                if (nextTotal < m) break;
             }
         }
+    }
 
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));//선언
-        String ret = String.valueOf(realMin);
-        bw.write(ret);
-        bf.close();
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+//        StringTokenizer st = new StringTokenizer(bf.readLine());
+
+        n = Integer.parseInt(br.readLine());
+        c = new int[n];
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) {
+            c[i] = Integer.parseInt(st.nextToken());
+        }
+        Arrays.sort(c);
+        m = Integer.parseInt(br.readLine());
+
+        dfs(0, 0);
+
+        bw.write(String.valueOf(answer));
+
+        br.close();
         bw.close();
     }
 }
