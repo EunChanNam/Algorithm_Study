@@ -3,35 +3,42 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    static int n;
-    static int[] c;
-    static int m;
-    static int answer = Integer.MAX_VALUE;
     static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+    static int n;
+    static int m;
+    static int[][] map;
+    static List<Point> piz = new ArrayList<>();
+    static List<Point> hs = new ArrayList<>();
+    static int answer = Integer.MAX_VALUE;
+    static Stack<Point> stack = new Stack<>();
 
-    static void dfs(int cnt, int total) {
-        if (total > m) return;
-        if (total == m) {
-            answer = Math.min(answer, cnt);
-        }
-        if (cnt > answer) return;
-        for (int i = n - 1; i >= 0; i--) {
-            dfs(cnt + 1, total + c[i]);
+    static class Point {
+        int y;
+        int x;
+        public Point(int y, int x) {
+            this.y = y;
+            this.x = x;
         }
     }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-//        StringTokenizer st = new StringTokenizer(bf.readLine());
-
-        n = Integer.parseInt(br.readLine());
-        c = new int[n];
         StringTokenizer st = new StringTokenizer(br.readLine());
-        for (int i = 0; i < n; i++) {
-            c[i] = Integer.parseInt(st.nextToken());
+
+        n = Integer.parseInt(st.nextToken());
+        m = Integer.parseInt(st.nextToken());
+        map = new int[n][n];
+        for (int y = 0; y < n; y++) {
+            st = new StringTokenizer(br.readLine());
+            for (int x = 0; x < n; x++) {
+                int a = Integer.parseInt(st.nextToken());
+                if (a == 2) {
+                    piz.add(new Point(y, x));
+                } else if (a == 1) {
+                    hs.add(new Point(y, x));
+                }
+            }
         }
-        Arrays.sort(c);
-        m = Integer.parseInt(br.readLine());
 
         dfs(0, 0);
 
@@ -40,4 +47,25 @@ public class Main {
         br.close();
         bw.close();
     }
+
+    static void dfs(int level, int start) {
+        if (level == m) {
+            int totalDis = 0;
+            for (Point q : hs) {
+                int dis = Integer.MAX_VALUE;
+                for (Point p : stack) {
+                    dis = Math.min(Math.abs(p.y - q.y) + Math.abs(p.x - q.x), dis);
+                }
+                totalDis += dis;
+            }
+            answer = Math.min(totalDis, answer);
+            return;
+        }
+        for (int i = start; i < piz.size(); i++) {
+            stack.push(piz.get(i));
+            dfs(level + 1, i + 1);
+            stack.pop();
+        }
+    }
+
 }
