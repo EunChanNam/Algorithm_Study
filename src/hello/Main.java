@@ -5,66 +5,45 @@ import java.util.*;
 public class Main {
     static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
     static int n;
-    static int m;
-    static int[][] map;
-    static List<Point> piz = new ArrayList<>();
-    static List<Point> hs = new ArrayList<>();
-    static int answer = Integer.MAX_VALUE;
-    static Stack<Point> stack = new Stack<>();
-
-    static class Point {
-        int y;
-        int x;
-        public Point(int y, int x) {
-            this.y = y;
-            this.x = x;
+    static List<Person> list = new ArrayList<>();
+    static int[] v;
+    static class Person{
+        Integer k;
+        Integer w;
+        public Person(int k, int w) {
+            this.k = k;
+            this.w = w;
         }
     }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st = new StringTokenizer(br.readLine());
-
-        n = Integer.parseInt(st.nextToken());
-        m = Integer.parseInt(st.nextToken());
-        map = new int[n][n];
-        for (int y = 0; y < n; y++) {
+        StringTokenizer st;
+        n = Integer.parseInt(br.readLine());
+        v = new int[n];
+        for (int i = 0; i < n; i++) {
             st = new StringTokenizer(br.readLine());
-            for (int x = 0; x < n; x++) {
-                int a = Integer.parseInt(st.nextToken());
-                if (a == 2) {
-                    piz.add(new Point(y, x));
-                } else if (a == 1) {
-                    hs.add(new Point(y, x));
-                }
+            int a = Integer.parseInt(st.nextToken());
+            int b = Integer.parseInt(st.nextToken());
+            list.add(new Person(a, b));
+        }
+
+        Comparator<Person> comparator = (a, b) -> {
+            if (!a.k.equals(b.k)) return a.k.compareTo(b.k);
+            else return a.w.compareTo(b.w);
+        };
+        list.sort(comparator.reversed());
+
+        int cnt =0;
+        int max = Integer.MIN_VALUE;
+        for (Person p : list) {
+            if (p.w > max) {
+                max = p.w;
+                cnt++;
             }
         }
-        dfs(0, 0);
 
-        bw.write(String.valueOf(answer));
-
-        br.close();
-        bw.close();
-    }
-
-    static void dfs(int level, int start) {
-        if (level == m) {
-            int totalDis = 0;
-            for (Point q : hs) {
-                int dis = Integer.MAX_VALUE;
-                for (Point p : stack) {
-                    dis = Math.min(Math.abs(p.y - q.y) + Math.abs(p.x - q.x), dis);
-                }
-                totalDis += dis;
-            }
-            answer = Math.min(totalDis, answer);
-            return;
-        }
-        for (int i = start; i < piz.size(); i++) {
-            stack.push(piz.get(i));
-            dfs(level + 1, i + 1);
-            stack.pop();
-        }
+        System.out.println(cnt);
     }
 
 }
