@@ -39,7 +39,6 @@ public class Main {
                 }
             }
         }
-
         dfs(0, 0);
 
         bw.write(String.valueOf(answer));
