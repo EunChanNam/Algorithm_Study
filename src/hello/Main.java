@@ -5,45 +5,37 @@ import java.util.*;
 public class Main {
     static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
     static int n;
-    static List<Person> list = new ArrayList<>();
-    static int[] v;
-    static class Person{
-        Integer k;
-        Integer w;
-        public Person(int k, int w) {
-            this.k = k;
-            this.w = w;
-        }
-    }
+    static int[] v = new int[73];
+    static Stack<Integer> stack = new Stack<>();
+    static int max = Integer.MIN_VALUE;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st;
         n = Integer.parseInt(br.readLine());
-        v = new int[n];
+
         for (int i = 0; i < n; i++) {
             st = new StringTokenizer(br.readLine());
             int a = Integer.parseInt(st.nextToken());
             int b = Integer.parseInt(st.nextToken());
-            list.add(new Person(a, b));
+            v[a]++;
+            v[b]--;
         }
 
-        Comparator<Person> comparator = (a, b) -> {
-            if (!a.k.equals(b.k)) return a.k.compareTo(b.k);
-            else return a.w.compareTo(b.w);
-        };
-        list.sort(comparator.reversed());
-
-        int cnt =0;
-        int max = Integer.MIN_VALUE;
-        for (Person p : list) {
-            if (p.w > max) {
-                max = p.w;
-                cnt++;
+        for (int i = 0; i < 73; i++) {
+            if (v[i] < 0) {
+                for (int x = 0; x < Math.abs(v[i]); x++) {
+                    stack.pop();
+                }
+            } else {
+                for (int x = 0; x < v[i]; x++) {
+                    stack.push(1);
+                }
             }
+            max = Math.max(max, stack.size());
         }
 
-        System.out.println(cnt);
+        System.out.println(max);
     }
 
 }
