@@ -5,37 +5,41 @@ import java.util.*;
 public class Main {
     static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
     static int n;
-    static int[] v = new int[73];
-    static Stack<Integer> stack = new Stack<>();
-    static int max = Integer.MIN_VALUE;
+    static long[] a;
+    static long[] answer = new long[3];
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st;
         n = Integer.parseInt(br.readLine());
 
+        a = new long[n];
+        st = new StringTokenizer(br.readLine());
         for (int i = 0; i < n; i++) {
-            st = new StringTokenizer(br.readLine());
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
-            v[a]++;
-            v[b]--;
+            a[i] = Long.parseLong(st.nextToken());
         }
 
-        for (int i = 0; i < 73; i++) {
-            if (v[i] < 0) {
-                for (int x = 0; x < Math.abs(v[i]); x++) {
-                    stack.pop();
+        Arrays.sort(a);
+
+        long min = Long.MAX_VALUE;
+        for (int i=0; i < n; i++) {
+            int lt = i + 1; int rt = n - 1;
+            while (rt > lt) {
+                long sum = a[rt] + a[lt] + a[i];
+                long abs = Math.abs(sum);
+                if (abs < min) {
+                    min = abs;
+                    answer[0] = a[i]; answer[1] = a[lt]; answer[2] = a[rt];
                 }
-            } else {
-                for (int x = 0; x < v[i]; x++) {
-                    stack.push(1);
-                }
+                if (sum > 0) rt--;
+                else lt++;
             }
-            max = Math.max(max, stack.size());
         }
 
-        System.out.println(max);
-    }
+        Arrays.sort(answer);
+        bw.write(answer[0] + " " + answer[1] + " " + answer[2]);
 
+        br.close();
+        bw.close();
+    }
 }
