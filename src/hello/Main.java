@@ -5,39 +5,40 @@ import java.util.*;
 public class Main {
     static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
     static int n;
-    static long[] a;
-    static long[] answer = new long[3];
+    static int[] a;
+    static Stack<Integer> stack = new Stack<>();
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st;
         n = Integer.parseInt(br.readLine());
-
-        a = new long[n];
+        a = new int[n + 1];
         st = new StringTokenizer(br.readLine());
-        for (int i = 0; i < n; i++) {
-            a[i] = Long.parseLong(st.nextToken());
+        for (int i = 1; i <= n; i++) {
+            a[i] = Integer.parseInt(st.nextToken());
         }
 
-        Arrays.sort(a);
-
-        long min = Long.MAX_VALUE;
-        for (int i=0; i < n; i++) {
-            int lt = i + 1; int rt = n - 1;
-            while (rt > lt) {
-                long sum = a[rt] + a[lt] + a[i];
-                long abs = Math.abs(sum);
-                if (abs < min) {
-                    min = abs;
-                    answer[0] = a[i]; answer[1] = a[lt]; answer[2] = a[rt];
-                }
-                if (sum > 0) rt--;
-                else lt++;
+        stack.push(n);
+        for (int i = n - 1; i >= 1; i--) {
+            while (!stack.isEmpty()) {
+                int p = stack.peek();
+                int now = a[p];
+                if (now <= a[i]) {
+                    a[p] = i;
+                    stack.pop();
+                } else break;
             }
+            stack.push(i);
+            int k = 3;
         }
 
-        Arrays.sort(answer);
-        bw.write(answer[0] + " " + answer[1] + " " + answer[2]);
+        for (int p : stack) {
+            a[p] = 0;
+        }
+
+        for (int i = 1; i <= n; i++) {
+            bw.write(a[i] + " ");
+        }
 
         br.close();
         bw.close();
