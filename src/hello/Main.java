@@ -15,7 +15,6 @@ public class Main {
             this.d = d;
         }
     }
-
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st;
@@ -47,5 +46,4 @@ public class Main {
         br.close();
         bw.close();
     }
-
 }
