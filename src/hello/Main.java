@@ -6,15 +6,30 @@ public class Main {
     static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
     static int n;
     static int m;
-    static int[] visit;
-    static List<List<Node>> list = new ArrayList<>();
-    static PriorityQueue<Node> que = new PriorityQueue<>((a, b) -> Integer.compare(a.cost, b.cost));
+    static int[] arr;
+    static List<Node> list = new ArrayList<>();
     static class Node{
-        int a; int cost;
-        public Node(int a, int cost) {
+        int a; int b; int cost;
+        public Node(int a, int b, int cost) {
             this.a = a;
+            this.b = b;
             this.cost = cost;
         }
+    }
+
+    static int find(int a) {
+        if (arr[a] == a) return arr[a];
+        return arr[a] = find(arr[a]);
+    }
+
+    static boolean union(int a, int b) {
+        int fa = find(a);
+        int fb = find(b);
+        if (fa != fb) {
+            arr[fa] = fb;
+            return true;
+        }
+        else return false;
     }
 
     public static void main(String[] args) throws IOException {
@@ -22,30 +37,20 @@ public class Main {
         StringTokenizer st = new StringTokenizer(br.readLine());
         n = Integer.parseInt(st.nextToken());
         m = Integer.parseInt(st.nextToken());
-        visit = new int[n + 1];
-        for (int i = 0; i <= n; i++) {
-            list.add(new ArrayList<>());
-        }
+        arr = new int[n + 1];
+        for (int i=1; i <= n; i++) arr[i] = i;
         for (int i = 0; i < m; i++) {
             st = new StringTokenizer(br.readLine());
             int a = Integer.parseInt(st.nextToken());
             int b = Integer.parseInt(st.nextToken());
             int c = Integer.parseInt(st.nextToken());
-            list.get(a).add(new Node(b, c));
-            list.get(b).add(new Node(a, c));
+            list.add(new Node(a, b, c));
         }
+        list.sort((q, w) -> Integer.compare(q.cost, w.cost));
 
-        int cnt = 0;
         int sum = 0;
-        que.add(new Node(1, 0));
-        while(cnt < n){
-            Node p = que.poll();
-            if (visit[p.a] != 1){
-                for(Node next : list.get(p.a)){
-                    que.offer(next);
-                }
-                visit[p.a] = 1;
-                cnt++;
+        for (Node p : list){
+            if (union(p.a, p.b)){
                 sum += p.cost;
             }
         }
@@ -55,4 +60,5 @@ public class Main {
         br.close();
         bw.close();
     }
+}
 }
