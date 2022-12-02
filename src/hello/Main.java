@@ -5,37 +5,47 @@ import java.util.*;
 public class Main {
     static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
     static int n;
-    static int[] v = new int[73];
-    static Stack<Integer> stack = new Stack<>();
-    static int max = Integer.MIN_VALUE;
+    static List<Node> list = new ArrayList<>();
+    static PriorityQueue<Integer> que = new PriorityQueue<>(Collections.reverseOrder());
+
+    static class Node{
+        int k; int d;
+        public Node(int k, int d) {
+            this.k = k;
+            this.d = d;
+        }
+    }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st;
         n = Integer.parseInt(br.readLine());
-
         for (int i = 0; i < n; i++) {
             st = new StringTokenizer(br.readLine());
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
-            v[a]++;
-            v[b]--;
+            int k = Integer.parseInt(st.nextToken());
+            int d = Integer.parseInt(st.nextToken());
+            list.add(new Node(k, d));
         }
+        list.sort((a, b) -> {
+            if (a.d == b.d) return Integer.compare(b.k, a.k);
+            return Integer.compare(b.d, a.d);
+        });
 
-        for (int i = 0; i < 73; i++) {
-            if (v[i] < 0) {
-                for (int x = 0; x < Math.abs(v[i]); x++) {
-                    stack.pop();
-                }
-            } else {
-                for (int x = 0; x < v[i]; x++) {
-                    stack.push(1);
-                }
+        int i = list.get(0).d;
+        int sum =0;
+        int x = 0;
+        for (int y = i; y >= 1; y--) {
+            for ( ; x < n; x++) {
+                if (list.get(x).d < y) break;
+                que.offer(list.get(x).k);
             }
-            max = Math.max(max, stack.size());
+            if (!que.isEmpty()) sum += que.poll();
         }
 
-        System.out.println(max);
+        bw.write(String.valueOf(sum));
+
+        br.close();
+        bw.close();
     }
 
 }
