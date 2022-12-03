@@ -5,60 +5,83 @@ import java.util.*;
 public class Main {
     static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
     static int n;
-    static int m;
-    static int[] arr;
-    static List<Node> list = new ArrayList<>();
-    static class Node{
-        int a; int b; int cost;
-        public Node(int a, int b, int cost) {
-            this.a = a;
-            this.b = b;
-            this.cost = cost;
+    static int big;
+    static int small;
+    static boolean addCnt;
+    static int[][] map;
+    static int[][] visit;
+    static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
+    static Queue<Point> que = new LinkedList<>();
+    static class Point{
+        int y; int x;
+        public Point(int y, int x){
+            this.y = y;
+            this.x = x;
         }
     }
 
-    static int find(int a) {
-        if (arr[a] == a) return arr[a];
-        return arr[a] = find(arr[a]);
-    }
-
-    static boolean union(int a, int b) {
-        int fa = find(a);
-        int fb = find(b);
-        if (fa != fb) {
-            arr[fa] = fb;
-            return true;
-        }
-        else return false;
-    }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
         n = Integer.parseInt(st.nextToken());
-        m = Integer.parseInt(st.nextToken());
-        arr = new int[n + 1];
-        for (int i=1; i <= n; i++) arr[i] = i;
-        for (int i = 0; i < m; i++) {
-            st = new StringTokenizer(br.readLine());
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
-            int c = Integer.parseInt(st.nextToken());
-            list.add(new Node(a, b, c));
-        }
-        list.sort((q, w) -> Integer.compare(q.cost, w.cost));
+        map = new int[n][n];
+        big = Integer.parseInt(st.nextToken());
+        small = Integer.parseInt(st.nextToken());
 
-        int sum = 0;
-        for (Node p : list){
-            if (union(p.a, p.b)){
-                sum += p.cost;
+        for (int y=0; y < n; y++){
+            st = new StringTokenizer(br.readLine());
+            for (int x=0; x< n; x++){
+                map[y][x] = Integer.parseInt(st.nextToken());
             }
         }
 
-        bw.write(String.valueOf(sum));
+        int cnt = 0;
+        boolean keep = true;
+        while (keep) {
+            addCnt = false;
+            visit = new int[n][n];
+            for (int y = 0; y < n; y++) {
+                for (int x = 0; x < n; x++) {
+                    if (visit[y][x] != 1) {
+                        bfs(y, x);
+                    }
+                }
+            }
+            if (addCnt) cnt++;
+            else keep = false;
+        }
+
+        bw.write(String.valueOf(cnt));
 
         br.close();
         bw.close();
     }
-}
+
+    static void bfs(int dy, int dx){
+        que.offer(new Point(dy, dx));
+        visit[dy][dx] = 1;
+        int sum = 0;
+        List<Point> list = new ArrayList<>();
+        while(!que.isEmpty()){
+            Point p = que.poll();
+            sum += map[p.y][p.x];
+            list.add(p);
+            for (int i = 0; i < 4; i++) {
+                int ny = p.y + dir[i][0];
+                int nx = p.x + dir[i][1];
+                if (ny < 0 || ny >= n || nx < 0 || nx >= n) continue;
+                if (visit[ny][nx] == 1) continue;
+                int gap = Math.abs(map[p.y][p.x] - map[ny][nx]);
+                if (gap < big || gap > small) continue;
+                visit[ny][nx] = 1;
+                que.offer(new Point(ny, nx));
+            }
+        }
+        int avg = sum / list.size();
+        if (list.size() > 1) addCnt = true;
+        for(Point p : list){
+            map[p.y][p.x] = avg;
+        }
+    }
 }
