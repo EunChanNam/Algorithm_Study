@@ -3,85 +3,58 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-    static int n;
-    static int big;
-    static int small;
-    static boolean addCnt;
-    static int[][] map;
-    static int[][] visit;
-    static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
-    static Queue<Point> que = new LinkedList<>();
-    static class Point{
-        int y; int x;
-        public Point(int y, int x){
-            this.y = y;
-            this.x = x;
-        }
-    }
+    static List<List<Integer>> list = new ArrayList<>();
+    static Queue<Integer> que = new LinkedList<>();
+    static int[] visit;
+    static int bfs(int start, int not){
+        int cnt = 1;
+        que.offer(start);
+        visit[start] = 1;
 
-
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st = new StringTokenizer(br.readLine());
-        n = Integer.parseInt(st.nextToken());
-        map = new int[n][n];
-        big = Integer.parseInt(st.nextToken());
-        small = Integer.parseInt(st.nextToken());
-
-        for (int y=0; y < n; y++){
-            st = new StringTokenizer(br.readLine());
-            for (int x=0; x< n; x++){
-                map[y][x] = Integer.parseInt(st.nextToken());
-            }
-        }
-
-        int cnt = 0;
-        boolean keep = true;
-        while (keep) {
-            addCnt = false;
-            visit = new int[n][n];
-            for (int y = 0; y < n; y++) {
-                for (int x = 0; x < n; x++) {
-                    if (visit[y][x] != 1) {
-                        bfs(y, x);
-                    }
+        while(!que.isEmpty()){
+            int p = que.poll();
+            for (int i=0; i < list.get(p).size(); i++){
+                if (visit[list.get(p).get(i)] != 1 && list.get(p).get(i) != not){
+                    visit[list.get(p).get(i)] = 1;
+                    que.offer(list.get(p).get(i));
+                    cnt++;
                 }
             }
-            if (addCnt) cnt++;
-            else keep = false;
+        }
+        return cnt;
+    }
+    static int solution(int n, int[][] wires) {
+        int answer = -1;
+
+        for (int i=0; i <= n; i++){
+            list.add(new ArrayList<>());
+        }
+        for (int i=0; i < n - 1; i++){
+            list.get(wires[i][0]).add(wires[i][1]);
+            list.get(wires[i][1]).add(wires[i][0]);
         }
 
-        bw.write(String.valueOf(cnt));
+        int min = Integer.MAX_VALUE;
+        for (int y=0; y < n - 1; y++){
+            visit = new int[n + 1];
+            int cnt1 = bfs(wires[y][0], wires[y][1]);
+            int cnt2 = bfs(wires[y][1], wires[y][0]);
+            min = Math.min(min, Math.abs(cnt1 - cnt2));
+        }
 
-        br.close();
-        bw.close();
+        return min;
     }
 
-    static void bfs(int dy, int dx){
-        que.offer(new Point(dy, dx));
-        visit[dy][dx] = 1;
-        int sum = 0;
-        List<Point> list = new ArrayList<>();
-        while(!que.isEmpty()){
-            Point p = que.poll();
-            sum += map[p.y][p.x];
-            list.add(p);
-            for (int i = 0; i < 4; i++) {
-                int ny = p.y + dir[i][0];
-                int nx = p.x + dir[i][1];
-                if (ny < 0 || ny >= n || nx < 0 || nx >= n) continue;
-                if (visit[ny][nx] == 1) continue;
-                int gap = Math.abs(map[p.y][p.x] - map[ny][nx]);
-                if (gap < big || gap > small) continue;
-                visit[ny][nx] = 1;
-                que.offer(new Point(ny, nx));
-            }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        int[][] wires = new int[n-1][2];
+        for (int i = 0; i < n - 1; i++) {
+            wires[i][0] = sc.nextInt();
+            wires[i][1] = sc.nextInt();
         }
-        int avg = sum / list.size();
-        if (list.size() > 1) addCnt = true;
-        for(Point p : list){
-            map[p.y][p.x] = avg;
-        }
+
+        int solution = solution(n, wires);
+        System.out.println(solution);
     }
 }
