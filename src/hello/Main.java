@@ -3,41 +3,31 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    public int solution(int[] a, int[] b) {
+    static int[] v;
+    static int[] visit;
+    static int find(int a, int cnt){
+        visit[a] = 1;
+        if (v[a] == a + 1) return cnt;
+        else if (visit[v[a] - 1] == 1) return cnt;
+        else return find(v[a] - 1, cnt + 1);
+    }
+    public int solution(int[] cards) {
         int answer = 0;
+        v = cards;
+        visit = new int[v.length];
 
-        Arrays.sort(a);
-        Arrays.sort(b);
-        int max = 0;
-
-        for (int i=a[0]; i >= 1; i--){
-            boolean flag2 = true;
-            for (int x=0; x < a.length; x++){
-                if (a[x] % i != 0 || b[x] % i == 0){
-                    flag2 = false;
-                    break;
-                }
-            }
-            if (flag2) {
-                max = i;
-                break;
-            }
-        }
-        for (int i=b[0]; i >= 1; i--){
-            boolean flag = true;
-            for (int x=0; x < b.length; x++){
-                if (b[x] % i != 0 || a[x] % i == 0){
-                    flag = false;
-                    break;
-                }
-            }
-            if (flag) {
-                max = Math.max(max, i);
-                break;
+        List<Integer> list = new ArrayList<>();
+        for (int i=0; i < v.length; i++){
+            if (visit[i] != 1){
+                int k = find(i, 1);
+                list.add(k);
             }
         }
 
-        answer = max;
+        if (list.size() == 1) return answer;
+        answer = 1;
+        list.sort((a, b) -> b.compareTo(a));
+        answer = list.get(0) * list.get(1);
 
         return answer;
     }
