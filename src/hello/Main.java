@@ -5,25 +5,22 @@ import java.util.*;
 public class Main {
     public int solution(int[] a) {
         int answer = 0;
-        int n = a.length;
-
-        Stack<Integer> stack = new Stack<>();
-        int target = 0;
-        for (int i = 1; i <= n; i++){
-            if (i == a[target]){
-                answer++;
-                target++;
-                while(!stack.isEmpty()){
-                    int p = stack.peek();
-                    if (p == a[target]){
-                        answer++;
-                        target++;
-                        stack.pop();
-                    } else break;
-                }
-            } else stack.push(i);
+        Map<Integer, Integer> map = new HashMap<>();
+        Map<Integer, Integer> map2 = new HashMap<>();
+        for (int i=0; i < a.length; i++){
+            map.put(a[i], map.getOrDefault(a[i], 0) + 1);
         }
 
+        for (int i=0; i < a.length; i++){
+            map2.put(a[i], map2.getOrDefault(a[i], 0) + 1);
+            if (map.get(a[i]) == 1){
+                map.remove(a[i]);
+            } else {
+                map.put(a[i], map.get(a[i]) - 1);
+            }
+
+            if (map.size() == map2.size()) answer++;
+        }
 
         return answer;
     }
