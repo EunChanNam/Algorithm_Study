@@ -3,58 +3,78 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    static List<List<Integer>> list = new ArrayList<>();
-    static Queue<Integer> que = new LinkedList<>();
-    static int[] visit;
-    static int bfs(int start, int not){
-        int cnt = 1;
+    static int[][] dir = {{-1,0}, {0,-1}, {0,1}, {1,0}};
+    static int[][] visit;
+    static Queue<Point> que = new LinkedList<>();
+    static class Point{
+        int y; int x; int level;
+        public Point(int y, int x, int level){
+            this.y = y;
+            this.x = x;
+            this.level = level;
+        }
+    }
+
+    static boolean isUnable(Point start, String[] map) {
         que.offer(start);
-        visit[start] = 1;
+        visit[start.y][start.x] = 1;
 
         while(!que.isEmpty()){
-            int p = que.poll();
-            for (int i=0; i < list.get(p).size(); i++){
-                if (visit[list.get(p).get(i)] != 1 && list.get(p).get(i) != not){
-                    visit[list.get(p).get(i)] = 1;
-                    que.offer(list.get(p).get(i));
-                    cnt++;
+            Point p = que.poll();
+            if (p.level == 2) continue;
+            for (int i=0; i < 4; i++){
+                int ny = p.y + dir[i][0];
+                int nx = p.x + dir[i][1];
+                if (ny < 0 || ny >= 5 || nx < 0 || nx >= 5) continue;
+                if (visit[ny][nx] == 1) continue;
+                if (map[ny].charAt(nx) == 'X') continue;
+                if (map[ny].charAt(nx) == 'P') {
+                    que.clear();
+                    return true;
                 }
+                visit[ny][nx] = 1;
+                que.offer(new Point(ny, nx, p.level + 1));
             }
         }
-        return cnt;
+        return false;
     }
-    static int solution(int n, int[][] wires) {
-        int answer = -1;
 
-        for (int i=0; i <= n; i++){
-            list.add(new ArrayList<>());
-        }
-        for (int i=0; i < n - 1; i++){
-            list.get(wires[i][0]).add(wires[i][1]);
-            list.get(wires[i][1]).add(wires[i][0]);
+    public static int[] solution(String[][] place) {
+        int[] answer = new int[place.length];
+        int n = place.length;
+
+        for (int z=0; z < n; z++){
+            boolean flag = false;
+            for (int y=0; y < 5; y++){
+                for (int x=0; x < 5; x++){
+                    if (place[z][y].charAt(x) == 'P'){
+                        visit = new int[5][5];
+                        if (isUnable(new Point(y, x, 0), place[z])){
+                            flag = true;
+                            break;
+                        }
+                    }
+                }
+                if (flag) break;
+            }
+            if (flag) answer[z] = 0;
+            else answer[z] = 1;
         }
 
-        int min = Integer.MAX_VALUE;
-        for (int y=0; y < n - 1; y++){
-            visit = new int[n + 1];
-            int cnt1 = bfs(wires[y][0], wires[y][1]);
-            int cnt2 = bfs(wires[y][1], wires[y][0]);
-            min = Math.min(min, Math.abs(cnt1 - cnt2));
-        }
-
-        return min;
+        return answer;
     }
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        int n = sc.nextInt();
-        int[][] wires = new int[n-1][2];
-        for (int i = 0; i < n - 1; i++) {
-            wires[i][0] = sc.nextInt();
-            wires[i][1] = sc.nextInt();
-        }
+        String[][] place = {{"POOOP", "OXXOX", "OPXPX", "OOXOX", "POXXP"},
+                {"POOPX", "OXPXP", "PXXXO", "OXXXO", "OOOPP"},
+                {"PXOPX", "OXOXP", "OXPOX", "OXXOP", "PXPOX"},
+                {"OOOXX", "XOOOX", "OOOXX", "OXOOX", "OOOOO"},
+                {"PXPXP", "XPXPX", "PXPXP", "XPXPX", "PXPXP"}};
+        int[] solution = solution(place);
 
-        int solution = solution(n, wires);
-        System.out.println(solution);
+        for (int answer : solution) {
+            System.out.print(answer + " ");
+        }
     }
 }
