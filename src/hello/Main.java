@@ -3,31 +3,27 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    static int[] v;
-    static int[] visit;
-    static int find(int a, int cnt){
-        visit[a] = 1;
-        if (v[a] == a + 1) return cnt;
-        else if (visit[v[a] - 1] == 1) return cnt;
-        else return find(v[a] - 1, cnt + 1);
-    }
-    public int solution(int[] cards) {
+    public int solution(int[] a) {
         int answer = 0;
-        v = cards;
-        visit = new int[v.length];
+        int n = a.length;
 
-        List<Integer> list = new ArrayList<>();
-        for (int i=0; i < v.length; i++){
-            if (visit[i] != 1){
-                int k = find(i, 1);
-                list.add(k);
-            }
+        Stack<Integer> stack = new Stack<>();
+        int target = 0;
+        for (int i = 1; i <= n; i++){
+            if (i == a[target]){
+                answer++;
+                target++;
+                while(!stack.isEmpty()){
+                    int p = stack.peek();
+                    if (p == a[target]){
+                        answer++;
+                        target++;
+                        stack.pop();
+                    } else break;
+                }
+            } else stack.push(i);
         }
 
-        if (list.size() == 1) return answer;
-        answer = 1;
-        list.sort((a, b) -> b.compareTo(a));
-        answer = list.get(0) * list.get(1);
 
         return answer;
     }
