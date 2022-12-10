@@ -3,29 +3,48 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    public int solution(int[] a) {
-        int answer = 0;
-        Map<Integer, Integer> map = new HashMap<>();
-        Map<Integer, Integer> map2 = new HashMap<>();
-        for (int i=0; i < a.length; i++){
-            map.put(a[i], map.getOrDefault(a[i], 0) + 1);
-        }
 
-        for (int i=0; i < a.length; i++){
-            map2.put(a[i], map2.getOrDefault(a[i], 0) + 1);
-            if (map.get(a[i]) == 1){
-                map.remove(a[i]);
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+        String str = br.readLine();
+        Stack<Character> stack = new Stack<>();
+        int n = str.length();
+
+        boolean flag = true;
+        for (int i = 0; i < n; i++) {
+            char ch = str.charAt(i);
+            if (ch == 'P') {
+                stack.push(ch);
             } else {
-                map.put(a[i], map.get(a[i]) - 1);
+                if (i != n - 1) {
+                    if (str.charAt(i + 1) == 'A') {
+                        flag = false;
+                        break;
+                    }
+                } else {
+                    if (ch == 'A') {
+                        flag = false;
+                        break;
+                    }
+                }
+                if (stack.size() < 2) {
+                    flag = false;
+                    break;
+                } else {
+                    stack.pop();
+                    stack.pop();
+                }
             }
-
-            if (map.size() == map2.size()) answer++;
         }
+        if (stack.size() != 1) flag = false;
 
-        return answer;
-    }
+        if (flag) bw.write("PPAP");
+        else bw.write("NP");
 
-    public static void main(String[] args) {
-
+        bw.close();
+        br.close();
     }
 }
