@@ -9,40 +9,38 @@ public class Main {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
-        String str = br.readLine();
-        Stack<Character> stack = new Stack<>();
-        int n = str.length();
-
-        boolean flag = true;
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken());
+        int k = Integer.parseInt(st.nextToken());
+        int[] a = new int[n];
         for (int i = 0; i < n; i++) {
-            char ch = str.charAt(i);
-            if (ch == 'P') {
-                stack.push(ch);
-            } else {
-                if (i != n - 1) {
-                    if (str.charAt(i + 1) == 'A') {
-                        flag = false;
-                        break;
-                    }
-                } else {
-                    if (ch == 'A') {
-                        flag = false;
-                        break;
-                    }
-                }
-                if (stack.size() < 2) {
-                    flag = false;
-                    break;
-                } else {
-                    stack.pop();
-                    stack.pop();
+            a[i] = Integer.parseInt(br.readLine());
+        }
+        Arrays.sort(a);
+        int answer = 0;
+
+        int lt = 1;
+        int rt = a[n - 1] - a[0];
+
+        while (rt >= lt) {
+            int m = (lt + rt) / 2;
+            int cnt = 1;
+            int now = 0;
+            for (int i = 1; i < n; i++) {
+                if ((a[i] - a[now]) >= m) {
+                    cnt++;
+                    now = i;
                 }
             }
+            if (cnt >= k) {
+                lt = m + 1;
+                answer = Math.max(answer, m);
+            } else {
+                rt = m - 1;
+            }
         }
-        if (stack.size() != 1) flag = false;
 
-        if (flag) bw.write("PPAP");
-        else bw.write("NP");
+        bw.write(String.valueOf(answer));
 
         bw.close();
         br.close();
