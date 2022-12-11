@@ -3,46 +3,48 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
+    static int n;
+    static int m;
+    static char[][] map;
+    static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
+    static Map<Character, Integer> check = new HashMap<>();
+    static int max = Integer.MIN_VALUE;
 
+    static void dfs(int dy, int dx) {
+        max = Math.max(max, check.size());
+        for (int i = 0; i < 4; i++) {
+            int ny = dy + dir[i][0];
+            int nx = dx + dir[i][1];
+            if (ny <0 || nx < 0 || ny >= n || nx >= m) continue;
+            if (check.containsKey(map[ny][nx])) continue;
+            check.put(map[ny][nx], 1);
+            dfs(ny, nx);
+            check.remove(map[ny][nx]);
+        }
+    }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-
         StringTokenizer st = new StringTokenizer(br.readLine());
-        int n = Integer.parseInt(st.nextToken());
-        int k = Integer.parseInt(st.nextToken());
-        int[] a = new int[n];
-        for (int i = 0; i < n; i++) {
-            a[i] = Integer.parseInt(br.readLine());
-        }
-        Arrays.sort(a);
-        int answer = 0;
+        n = Integer.parseInt(st.nextToken());
+        m = Integer.parseInt(st.nextToken());
+        map = new char[n][m];
 
-        int lt = 1;
-        int rt = a[n - 1] - a[0];
-
-        while (rt >= lt) {
-            int m = (lt + rt) / 2;
-            int cnt = 1;
-            int now = 0;
-            for (int i = 1; i < n; i++) {
-                if ((a[i] - a[now]) >= m) {
-                    cnt++;
-                    now = i;
-                }
-            }
-            if (cnt >= k) {
-                lt = m + 1;
-                answer = Math.max(answer, m);
-            } else {
-                rt = m - 1;
+        for (int y = 0; y < n; y++) {
+            String temp = br.readLine();
+            for (int x = 0; x < m; x++) {
+                char ch = temp.charAt(x);
+                map[y][x] = ch;
             }
         }
 
-        bw.write(String.valueOf(answer));
+        check.put(map[0][0], 1);
+        dfs(0, 0);
 
-        bw.close();
+        bw.write(String.valueOf(max));
+
         br.close();
+        bw.close();
     }
 }
