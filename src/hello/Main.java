@@ -4,12 +4,12 @@ import java.util.*;
 
 public class Main {
     static int n;
-    static Node[] arr;
+    static PriorityQueue<Node> que = new PriorityQueue<>((a, b) -> Integer.compare(b.val, a.val));
     static class Node{
-        int start; int end;
-        public Node(int start, int end){
-            this.start = start;
-            this.end = end;
+        int dis; int val;
+        public Node(int dis, int val){
+            this.dis = dis;
+            this.val = val;
         }
     }
 
@@ -19,30 +19,34 @@ public class Main {
         StringTokenizer st;
 
         n = Integer.parseInt(br.readLine());
-        arr = new Node[n];
-        for (int i=0; i < n; i++){
+
+        for (int i = 0; i < n; i++) {
             st = new StringTokenizer(br.readLine());
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
-            arr[i] = new Node(a, b);
+            int q = Integer.parseInt(st.nextToken());
+            int w = Integer.parseInt(st.nextToken());
+            que.offer(new Node(q, w));
         }
+        st = new StringTokenizer(br.readLine());
+        int goal = Integer.parseInt(st.nextToken());
+        int start = Integer.parseInt(st.nextToken());
 
-        Arrays.sort(arr, (q, w) -> {
-            if (q.end == w.end) return Integer.compare(q.start, w.start);
-            else return Integer.compare(q.end, w.end);
-        });
-
-        int now = arr[0].end;
-        int cnt = 1;
-        for (int i=1; i < n; i++){
-            Node p = arr[i];
-            if (p.start >= now){
+        int cnt = 0;
+        int sum = start;
+        List<Node> list = new ArrayList<>();
+        while (sum < goal && !que.isEmpty()) {
+            Node p = que.poll();
+            if (sum >= p.dis) {
+                sum += p.val;
                 cnt++;
-                now = p.end;
-            }
+                for (Node t : list) {
+                    que.offer(t);
+                }
+                list.clear();
+            } else list.add(p);
         }
 
-        bw.write(String.valueOf(cnt));
+        if (que.isEmpty()) bw.write(String.valueOf(-1));
+        else bw.write(String.valueOf(cnt));
 
         br.close();
         bw.close();
