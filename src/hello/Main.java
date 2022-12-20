@@ -3,47 +3,34 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    public int solution(int[] m) {
-        int answer = 0;
-        int n = m.length;
+    static int n;
+    static int m;
+    static PriorityQueue<Long> que = new PriorityQueue<>();
 
-        if (n == 3){
-            answer = Arrays.stream(m).max().getAsInt();
-        } else if (n == 4){
-            answer = Math.max(answer, m[0] + m[2]);
-            answer = Math.max(answer, m[1] + m[3]);
-        } else{
-            int[] dp = new int[n];
-            int[] dp2 = new int[n];
-            for (int i=0; i < n; i++){
-                dp[i] = m[i];
-                dp2[i] = m[i];
-            }
-            dp[0] = 0;
-            dp2[n - 1] = 0;
-            answer = getRet(dp, answer, n);
-            answer = getRet(dp2, answer, n);
-        }
-
-        return answer;
-    }
-    static int getRet(int[] dp, int answer, int n){
-        for (int i = 2; i < n; i++){
-            int pre1 = i - 3;
-            int pre2 = i - 2;
-            int max;
-            if (i == 2) max = dp[0];
-            else max = Math.max(dp[pre1], dp[pre2]);
-            dp[i] = max + dp[i];
-            answer = Math.max(answer, dp[i]);
-        }
-        return answer;
-    }
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-        StringTokenizer st;
+        StringTokenizer st = new StringTokenizer(br.readLine());
 
+        n = Integer.parseInt(st.nextToken());
+        m = Integer.parseInt(st.nextToken());
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) {
+            que.offer(Long.parseLong(st.nextToken()));
+        }
+
+        int cnt = 0;
+        while (cnt < m) {
+            long a = que.poll();
+            long b = que.poll();
+            long sum = a + b;
+            que.offer(sum);
+            que.offer(sum);
+            cnt++;
+        }
+
+        long ret = que.stream().reduce(Long::sum).get();
+        bw.write(String.valueOf(ret));
 
         br.close();
         bw.close();
