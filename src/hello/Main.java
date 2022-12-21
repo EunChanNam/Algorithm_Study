@@ -4,33 +4,40 @@ import java.util.*;
 
 public class Main {
     static int n;
-    static int m;
-    static PriorityQueue<Long> que = new PriorityQueue<>();
+
+    static class Node{
+        int val; int t;
+        public Node(int val, int t){
+            this.val = val;
+            this.t = t;
+        }
+    }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st = new StringTokenizer(br.readLine());
-
         n = Integer.parseInt(st.nextToken());
-        m = Integer.parseInt(st.nextToken());
-        st = new StringTokenizer(br.readLine());
+        int end = Integer.parseInt(st.nextToken());
+        int[] dp = new int[end + 1];
+        List<Node> list = new ArrayList<>();
+
         for (int i = 0; i < n; i++) {
-            que.offer(Long.parseLong(st.nextToken()));
+            st = new StringTokenizer(br.readLine());
+            int a = Integer.parseInt(st.nextToken());
+            int b = Integer.parseInt(st.nextToken());
+            list.add(new Node(a, b));
         }
 
-        int cnt = 0;
-        while (cnt < m) {
-            long a = que.poll();
-            long b = que.poll();
-            long sum = a + b;
-            que.offer(sum);
-            que.offer(sum);
-            cnt++;
+        int answer = 0;
+        for (Node p : list) {
+            for (int i = end; i >= p.t; i--) {
+                dp[i] = Math.max(dp[i], dp[i - p.t] + p.val);
+            }
         }
+        answer = dp[end];
 
-        long ret = que.stream().reduce(Long::sum).get();
-        bw.write(String.valueOf(ret));
+        bw.write(String.valueOf(answer));
 
         br.close();
         bw.close();
