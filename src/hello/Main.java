@@ -5,39 +5,33 @@ import java.util.*;
 public class Main {
     static int n;
 
-    static class Node{
-        int val; int t;
-        public Node(int val, int t){
-            this.val = val;
-            this.t = t;
-        }
-    }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st = new StringTokenizer(br.readLine());
         n = Integer.parseInt(st.nextToken());
-        int end = Integer.parseInt(st.nextToken());
-        int[] dp = new int[end + 1];
-        List<Node> list = new ArrayList<>();
+        double[] arr = new double[n];
 
         for (int i = 0; i < n; i++) {
-            st = new StringTokenizer(br.readLine());
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
-            list.add(new Node(a, b));
+            arr[i] = Double.parseDouble(br.readLine());
+        }
+        double[][] dp = new double[2][n];
+
+        dp[0][0] = arr[0];
+        dp[1][0] = arr[0];
+
+        double answer = 0;
+        for (int i = 1; i < n; i++) {
+            double a = dp[0][i - 1];
+            double b = dp[1][i - 1];
+            dp[0][i] = Math.max(a, b) * arr[i];
+            dp[1][i] = arr[i];
+            answer = Math.max(answer, dp[0][i]);
+            answer = Math.max(answer, dp[1][i]);
         }
 
-        int answer = 0;
-        for (Node p : list) {
-            for (int i = end; i >= p.t; i--) {
-                dp[i] = Math.max(dp[i], dp[i - p.t] + p.val);
-            }
-        }
-        answer = dp[end];
-
-        bw.write(String.valueOf(answer));
+        bw.write(String.format("%.3f", answer));
 
         br.close();
         bw.close();
