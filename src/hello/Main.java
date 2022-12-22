@@ -4,36 +4,32 @@ import java.util.*;
 
 public class Main {
     static int n;
-    static class Node{
-        int val; int t;
-        public Node(int val, int t){
-            this.val = val;
-            this.t = t;
-        }
-    }
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st = new StringTokenizer(br.readLine());
         n = Integer.parseInt(st.nextToken());
-        int end = Integer.parseInt(st.nextToken());
-        Node[] arr = new Node[n];
+        int[] arr = new int[n];
         for (int i = 0; i < n; i++) {
-            st = new StringTokenizer(br.readLine());
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
-            arr[i] = new Node(b, a);
+            arr[i] = Integer.parseInt(br.readLine());
         }
 
-        int[] dp = new int[end + 1];
+        int[] plus = {1, 2, 3};
+        int[] dp = new int[1000001];
+        dp[0] = 1;
 
-        for (Node p : arr) {
-            for (int i = end; i >= p.t; i--) {
-                dp[i] = Math.max(dp[i], dp[i - p.t] + p.val);
+        for (int i = 1; i < 1000001; i++) {
+            for (int p : plus) {
+                if (i >= p) {
+                    dp[i] = (dp[i] + dp[i - p]) % 1000000009;
+                }
             }
         }
 
-        bw.write(String.valueOf(dp[end]));
+        for (int i = 0; i < n; i++) {
+            bw.write(String.valueOf(dp[arr[i]]));
+            if (i != n - 1) bw.newLine();
+        }
 
         br.close();
         bw.close();
