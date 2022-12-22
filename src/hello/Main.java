@@ -4,34 +4,36 @@ import java.util.*;
 
 public class Main {
     static int n;
-
-
+    static class Node{
+        int val; int t;
+        public Node(int val, int t){
+            this.val = val;
+            this.t = t;
+        }
+    }
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st = new StringTokenizer(br.readLine());
         n = Integer.parseInt(st.nextToken());
-        double[] arr = new double[n];
-
+        int end = Integer.parseInt(st.nextToken());
+        Node[] arr = new Node[n];
         for (int i = 0; i < n; i++) {
-            arr[i] = Double.parseDouble(br.readLine());
-        }
-        double[][] dp = new double[2][n];
-
-        dp[0][0] = arr[0];
-        dp[1][0] = arr[0];
-
-        double answer = 0;
-        for (int i = 1; i < n; i++) {
-            double a = dp[0][i - 1];
-            double b = dp[1][i - 1];
-            dp[0][i] = Math.max(a, b) * arr[i];
-            dp[1][i] = arr[i];
-            answer = Math.max(answer, dp[0][i]);
-            answer = Math.max(answer, dp[1][i]);
+            st = new StringTokenizer(br.readLine());
+            int a = Integer.parseInt(st.nextToken());
+            int b = Integer.parseInt(st.nextToken());
+            arr[i] = new Node(b, a);
         }
 
-        bw.write(String.format("%.3f", answer));
+        int[] dp = new int[end + 1];
+
+        for (Node p : arr) {
+            for (int i = end; i >= p.t; i--) {
+                dp[i] = Math.max(dp[i], dp[i - p.t] + p.val);
+            }
+        }
+
+        bw.write(String.valueOf(dp[end]));
 
         br.close();
         bw.close();
