@@ -3,86 +3,71 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
+    static int n;
+    static int m;
+    static int[][] map;
+    static int[][] visit;
     static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
-    static List<List<Character>> map = new ArrayList<>();
-    static class Node{
-        int y; int x; int level;
-        public Node(int y, int x, int level){
+    static class Point {
+        int y; int x;
+        public Point(int y, int x){
             this.y = y;
             this.x = x;
-            this.level = level;
         }
     }
-    static int cnt = 0;
-    static int[][] visit;
-    static List<Node> rmList;
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st;
-        for (int i = 0; i < 6; i++) {
-            map.add(new ArrayList<>());
-        }
-        for (int y = 0; y < 12; y++) {
-            String s = br.readLine();
-            for (int x = 0; x < 6; x++) {
-                char ch = s.charAt(x);
-                map.get(x).add(0, ch);
+        int T = Integer.parseInt(br.readLine());
+        for (int i = 0; i < T; i++) {
+            st = new StringTokenizer(br.readLine());
+            n = Integer.parseInt(st.nextToken());
+            m = Integer.parseInt(st.nextToken());
+            map = new int[m][n];
+            int k = Integer.parseInt(st.nextToken());
+            for (int j = 0; j < k; j++) {
+                st = new StringTokenizer(br.readLine());
+                int dx = Integer.parseInt(st.nextToken());
+                int dy = Integer.parseInt(st.nextToken());
+                map[dy][dx] = 1;
             }
-        }
 
-        boolean stop = true;
-        while (stop) {
-            boolean flag = false;
-            visit = new int[12][12];
-            rmList = new ArrayList<>();
-            for (int y = 0; y < map.size(); y++) {
-                for (int x = 0; x < map.get(y).size(); x++) {
-                    if (visit[y][x] == 1) continue;
-                    if (map.get(y).get(x) == '.') continue;
-                    boolean bfs = bfs(new Node(y, x, 0), map.get(y).get(x));
-                    if (bfs) {
-                        flag = true;
+            int cnt = 0;
+            visit = new int[m][n];
+            for (int y = 0; y < m; y++) {
+                for (int x = 0; x < n; x++) {
+                    if (map[y][x] == 1) {
+                        if (visit[y][x] == 1) continue;
+                        visit[y][x] = 1;
+                        bfs(y, x);
+                        cnt++;
                     }
                 }
             }
-            rmList.sort((a, b) -> Integer.compare(b.x, a.x));
-            for (Node p : rmList) {
-                map.get(p.y).remove(p.x);
-            }
-            if (flag) cnt++;
-            if (!flag) stop = false;
+            bw.write(String.valueOf(cnt));
+            if (i != T - 1) bw.newLine();
         }
-
-        bw.write(String.valueOf(cnt));
 
         br.close();
         bw.close();
     }
 
-    static boolean bfs(Node first, char target) {
-        Queue<Node> que = new LinkedList<>();
-        List<Node> list = new ArrayList<>();
-        que.offer(first);
-        visit[first.y][first.x] = 1;
+    static void bfs(int y, int x) {
+        Queue<Point> que = new LinkedList<>();
+        que.offer(new Point(y, x));
+
         while (!que.isEmpty()) {
-            Node p = que.poll();
-            list.add(p);
+            Point p = que.poll();
             for (int i = 0; i < 4; i++) {
                 int ny = p.y + dir[i][0];
                 int nx = p.x + dir[i][1];
-                if (ny < 0 || nx < 0 || ny >= 6 || nx >= 12) continue;
+                if (ny < 0 || nx < 0 || ny >= m || nx >= n) continue;
                 if (visit[ny][nx] == 1) continue;
-                if (map.get(ny).size() <= nx) continue;
-                if (map.get(ny).get(nx) != target) continue;
+                if (map[ny][nx] == 0) continue;
                 visit[ny][nx] = 1;
-                que.offer(new Node(ny, nx, p.level + 1));
+                que.offer(new Point(ny, nx));
             }
         }
-        if (list.size() >= 4){
-            rmList.addAll(list);
-            return true;
-        }
-        else return false;
     }
 }
