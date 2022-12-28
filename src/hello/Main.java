@@ -3,54 +3,33 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    //DP를 기본으로 풀면서 그리디한 우선순위큐를 적용해서 시간복잡도를 줄이며 풀었다.
-    static int n;
-    static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
-
-    static class Node{
-        int y; int x; int val;
-        public Node(int y, int x, int val){
-            this.y = y;
-            this.x = x;
-            this.val = val;
-        }
-    }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st;
-        n = Integer.parseInt(br.readLine());
-        int[][] map = new int[n][n];
-        int[][] dp = new int[n][n];
-        PriorityQueue<Node> que = new PriorityQueue<>(Comparator.comparingInt(a -> a.val));
 
-        for (int y = 0; y < n; y++) {
-            st = new StringTokenizer(br.readLine());
-            for (int x = 0; x < n; x++) {
-                map[y][x] = Integer.parseInt(st.nextToken());
-                dp[y][x] = 1;
-                que.offer(new Node(y, x, map[y][x]));
+        String str1 = br.readLine();
+        String str2 = br.readLine();
+        int n1 = str1.length();
+        int n2 = str2.length();
+        int[][] dp = new int[n1 + 1][n2 + 1];
+//        DP 배열을 2차원으로 구현하고 Y는 첫 번째 문자열, X는 두 번째 문자열로 설정하고
+//        각 배열의 값은 해당 문자열까지 비교하며 얻을 수 있는 최대 LCS이다.
+//        배열을 탐색하며 비교하는 문자가 같으면 해당 Y는 해당 X에서 사용해야 하므로 dp[y][x] = dp[y - 1][x - 1] + 1 이다
+//        같지 않으면 Y에서 이전의 문자를 비교할때의 최대 혹은 X에서 이전의 문자를 비교할 때의 최대 중에 큰 값이다.
+//        즉 dp[y][x] = Math.max(dp[y][x - 1], dp[y - 1][x])
+
+
+        for (int y = 1; y <= n1; y++) {
+            for (int x = 1; x <= n2; x++) {
+                if (str2.charAt(x - 1) == str1.charAt(y - 1)) {
+                    dp[y][x] = dp[y - 1][x - 1] + 1;
+                } else dp[y][x] = Math.max(dp[y][x - 1], dp[y - 1][x]);
             }
         }
 
-
-
-
-        int answer = 0;
-        while (!que.isEmpty()) {
-            Node p = que.poll();
-            for (int i = 0; i < 4; i++) {
-                int ny = p.y + dir[i][0];
-                int nx = p.x + dir[i][1];
-                if (ny < 0 || nx < 0 || ny >= n || nx >= n) continue;
-                if (map[ny][nx] >= map[p.y][p.x]) continue;
-                dp[p.y][p.x] = Math.max(dp[p.y][p.x], dp[ny][nx] + 1);
-            }
-            answer = Math.max(answer, dp[p.y][p.x]);
-        }
-
-        bw.write(String.valueOf(answer));
+        bw.write(String.valueOf(dp[n1][n2]));
 
         br.close();
         bw.close();
