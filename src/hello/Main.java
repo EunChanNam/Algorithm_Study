@@ -5,42 +5,59 @@ import java.util.*;
 public class Main {
     static int n;
     static int m;
-    static int[] arr;
-    static Stack<Integer> stack = new Stack<>();
-    static Set<String> set = new HashSet<>();
-    static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+    static List<Node> h = new ArrayList<>();
+    static List<Node> c = new ArrayList<>();
+    static Stack<Node> stack = new Stack<>();
+    static int answer = Integer.MAX_VALUE;
 
-    static void dfs(int level, String str, int start) throws IOException {
-        if (level == m) {
-            if (set.contains(str)) return;
-            for (int a : stack) {
-                bw.write(a + " ");
-            }
-            bw.newLine();
-            set.add(str);
-            return;
-        }
-        for (int i = start; i < n; i++) {
-            stack.push(arr[i]);
-            dfs(level + 1, str + arr[i] + " ", i);
-            stack.pop();
+    static class Node {
+        int y; int x;
+        public Node(int y, int x){
+            this.y = y;
+            this.x = x;
         }
     }
 
+    static void dfs(int level, int start) {
+        if (level == m) {
+            int sum = 0;
+            for (Node a : h) {
+                int min = Integer.MAX_VALUE;
+                for (Node b : stack) {
+                    int dis = Math.abs(a.y - b.y) + Math.abs(a.x - b.x);
+                    min = Math.min(min, dis);
+                }
+                sum += min;
+            }
+            answer = Math.min(answer, sum);
+            return;
+        }
+
+        for (int i = start; i < c.size(); i++) {
+            stack.push(c.get(i));
+            dfs(level + 1, i + 1);
+            stack.pop();
+        }
+    }
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st = new StringTokenizer(br.readLine());
 
         n = Integer.parseInt(st.nextToken());
         m = Integer.parseInt(st.nextToken());
-        arr = new int[n];
-        st = new StringTokenizer(br.readLine());
-        for (int i = 0; i < n; i++) {
-            arr[i] = Integer.parseInt(st.nextToken());
-        }
-        Arrays.sort(arr);
 
-        dfs(0, "", 0);
+        for (int y = 0; y < n; y++) {
+            st = new StringTokenizer(br.readLine());
+            for (int x = 0; x < n; x++) {
+                int a = Integer.parseInt(st.nextToken());
+                if (a == 1) h.add(new Node(y, x));
+                if (a == 2) c.add(new Node(y, x));
+            }
+        }
+
+        dfs(0, 0);
+        bw.write(String.valueOf(answer));
 
         br.close();
         bw.close();
