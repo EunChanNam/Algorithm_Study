@@ -5,7 +5,6 @@ import java.util.*;
 public class Main {
     static int n;
     static int m;
-    static int[] visit;
     static Stack<Integer> stack = new Stack<>();
     static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
@@ -18,12 +17,9 @@ public class Main {
             return;
         }
         for (int i = start; i <= n; i++) {
-            if (visit[i] == 1) continue;
-            visit[i] = 1;
             stack.push(i);
-            dfs(level + 1, i + 1);
+            dfs(level + 1, i);
             stack.pop();
-            visit[i] = 0;
         }
     }
 
@@ -33,7 +29,6 @@ public class Main {
 
         n = Integer.parseInt(st.nextToken());
         m = Integer.parseInt(st.nextToken());
-        visit = new int[n + 1];
 
         dfs(0, 1);
 
