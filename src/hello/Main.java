@@ -13,17 +13,19 @@ public class Main {
 
         n = Integer.parseInt(st.nextToken());
         int[] dp = new int[n + 1];
+        int[] arr = new int[n + 1];
+        st = new StringTokenizer(br.readLine());
+        for (int i = 1; i <= n; i++) {
+            arr[i] = Integer.parseInt(st.nextToken());
+        }
 
-        dp[0] = 1;
-        for (int i = 2; i <= n; i += 2) {
-            dp[i] = dp[i - 2] * 3;
-            for (int x = 4; x <= n; x += 2) {
-                int a = i - x;
-                if (a < 0) break;
-                dp[i] += dp[a] * 2;
+        for (int i = 1; i <= n; i++) {
+            for (int x = i; x >= 1; x--) {
+                int temp = Math.abs(arr[i] - arr[x]) + dp[x - 1];
+                dp[i] = Math.max(temp, dp[i]);
             }
         }
-        Year
+
         bw.write(String.valueOf(dp[n]));
 
         br.close();
