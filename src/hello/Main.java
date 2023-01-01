@@ -11,29 +11,49 @@ public class Main {
         StringTokenizer st = new StringTokenizer(br.readLine());
 
         n = Integer.parseInt(st.nextToken());
-        int[][] dp = new int[2][n + 1];
-        int[] arr = new int[n + 1];
-
-        for (int i = 1; i <= n; i++) {
-            arr[i] = Integer.parseInt(br.readLine());
+        int[] arr = new int[n];
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) {
+            arr[i] = Integer.parseInt(st.nextToken());
         }
-        dp[0][1] = arr[1];
-
-        int answer = 0;
-        for (int i = 2; i <= n; i++) {
-            //선택
-            int max = Math.max(arr[i - 1] + dp[1][i - 2], dp[1][i - 1]); //이전 선택 vs 이전 선택 X
-            dp[0][i] = max + arr[i];
-            //노 선택
-            max = Math.max(dp[0][i - 1], dp[1][i - 1]);
-            dp[1][i] = max;
-
-            answer = Math.max(answer, dp[0][i]);
-            answer = Math.max(answer, dp[1][i]);
+        int m = Integer.parseInt(br.readLine());
+        String[] dp = new String[m + 1];
+        for (int i = 0; i < m + 1; i++) {
+            dp[i] = "";
         }
-        if (n == 1) answer = arr[1];
 
-        bw.write(String.valueOf(answer));
+        for (int i = 1; i < m + 1; i++) {
+            for (int x = 0; x < n; x++) {
+                if (arr[x] > i) continue;
+                if (dp[i - arr[x]].isEmpty()) {
+                    dp[i] = String.valueOf(x);
+                    continue;
+                }
+                String a = String.valueOf(x);
+                String big;
+                String temp1 = dp[i - arr[x]] + a;
+                String temp2 = a + dp[i - arr[x]];
+                if (a.equals("0")) {
+                    if (temp1.charAt(0) == '0') big = "0";
+                    else big = temp1;
+                }
+                else if (temp1.length() > temp2.length()) big = temp1;
+                else if (temp2.length() > temp1.length()) big = temp2;
+                else {
+                    if (temp1.compareTo(temp2) < 0) big = temp2;
+                    else big = temp1;
+                }
+                if (dp[i].isEmpty()) dp[i] = big;
+                else {
+                    if (big.length() > dp[i].length()) dp[i] = big;
+                    else if (big.length() == dp[i].length()){
+                        if (big.compareTo(dp[i]) > 0) dp[i] = big;
+                    }
+                }
+            }
+        }
+
+        bw.write(dp[m]);
 
         br.close();
         bw.close();
