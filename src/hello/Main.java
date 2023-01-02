@@ -3,28 +3,22 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    public int solution(int m, int n, int[][] p) {
-        int answer = 0;
+    public int solution(int n, int k, int[] e) {
+        int answer = e.length;
 
-        int[][] dp = new int[n + 1][m + 1];
-        dp[1][1] = 1;
+        PriorityQueue<Integer> que = new PriorityQueue<>();
+        for (int i=0; i < e.length; i++){
+            que.offer(e[i]);
 
-        for (int i=0; i < p.length; i++){
-            dp[p[i][1]][p[i][0]] = -1;
-        }
+            if (que.size() > k){
+                n -= que.poll();
+            }
 
-        for (int y=1; y <= n; y++){
-            for (int x=1; x <= m; x++){
-                if (y == 1 && x == 1) continue;
-                if (dp[y][x] == -1) continue;
-                int up = dp[y - 1][x];
-                int down = dp[y][x - 1];
-                if (up == -1) up = 0;
-                if (down == -1) down = 0;
-                dp[y][x] = (up + down) % 1000000007;
+            if (n < 0) {
+                answer = i;
+                break;
             }
         }
-        answer = dp[n][m];
 
         return answer;
     }
