@@ -3,58 +3,67 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    static int m;
-    static List<List<Node>> list = new ArrayList<>();
+    static int n;
+    static int[][] map;
+    static Stack<Node> stack = new Stack<>();
+    static List<Node> list = new ArrayList<>();
+    static int answer = Integer.MAX_VALUE;
+    static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
+
     static class Node{
-        int k; int val;
-        public Node(int k, int val){
-            this.k = k;
+        int y; int x; int val;
+        public Node(int y, int x, int val){
+            this.y = y;
+            this.x = x;
             this.val = val;
         }
     }
-    static int[] visit;
-    static int[] ret;
-    static void dfs(int now, int sum){
-        for (int i=0; i < list.get(now).size(); i++){
-            List<Node> nows = list.get(now);
-            Node next = nows.get(i);
-            if (visit[next.k] == 1) continue;
-            if ((sum + next.val) > m) continue;
-            visit[next.k] = 1;
-            ret[next.k] = 1;
-            dfs(next.k, sum + next.val);
-            visit[next.k] = 0;
+    static void dfs(int level, int start) {
+        if (level == 3) {
+            int[][] visit = new int[n][n];
+            int sum = 0;
+            for (Node p : stack) {
+                if (visit[p.y][p.x] == 1) return;
+                visit[p.y][p.x] = 1;
+                sum += map[p.y][p.x];
+                for (int i = 0; i < 4; i++) {
+                    int ny = p.y + dir[i][0];
+                    int nx = p.x + dir[i][1];
+                    if (visit[ny][nx] == 1) return;
+                    visit[ny][nx] = 1;
+                    sum += map[ny][nx];
+                }
+            }
+            answer = Math.min(answer, sum);
+            return;
         }
-    }
-    public int solution(int n, int[][] road, int M) {
-        int answer = 0;
-        m = M;
-        visit = new int[n + 1];
-        ret = new int[n + 1];
-
-        for (int i=0; i <= n; i++){
-            list.add(new ArrayList<>());
+        for (int i = start; i < list.size(); i++) {
+            stack.push(list.get(i));
+            dfs(level + 1, i + 1);
+            stack.pop();
         }
-
-        for (int y=0; y < road.length; y++){
-            list.get(road[y][0]).add(new Node(road[y][1], road[y][2]));
-            list.get(road[y][1]).add(new Node(road[y][0], road[y][2]));
-        }
-
-        visit[1] = 1;
-        ret[1] = 1;
-        dfs(1, 0);
-        for (int i=0; i <= n; i++){
-            if (ret[i] == 1) answer++;
-        }
-
-        return answer;
     }
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st;
+        n = Integer.parseInt(br.readLine());
+        map = new int[n][n];
+        for (int y = 0; y < n; y++) {
+            st = new StringTokenizer(br.readLine());
+            for (int x = 0; x < n; x++) {
+                map[y][x] = Integer.parseInt(st.nextToken());
+            }
+        }
+        for (int y = 1; y < n - 1; y++) {
+            for (int x = 1; x < n - 1; x++) {
+                list.add(new Node(y, x, map[y][x]));
+            }
+        }
 
+        dfs(0, 0);
+
+        bw.write(String.valueOf(answer));
 
         br.close();
         bw.close();
