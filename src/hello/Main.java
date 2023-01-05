@@ -4,41 +4,51 @@ import java.util.*;
 
 public class Main {
     static int n;
-    static int m;
-    static int[] a;
-    static int max = Integer.MIN_VALUE;
-    static Stack<Integer> stack = new Stack<>();
-
-    static void dfs(int level, int start) {
-        if (level == 3) {
-            int sum = stack.stream().reduce(Integer::sum).get();
-            if (sum > m) return;
-            max = Math.max(max, sum);
-            return;
-        }
-        for (int i = start; i < n; i++) {
-            stack.push(a[i]);
-            dfs(level + 1, i + 1);
-            stack.pop();
-        }
-    }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st;
         st = new StringTokenizer(br.readLine());
-        n = Integer.parseInt(st.nextToken());
-        m = Integer.parseInt(st.nextToken());
-        a = new int[n];
-        st = new StringTokenizer(br.readLine());
-        for (int i = 0; i < n; i++) {
-            a[i] = Integer.parseInt(st.nextToken());
+        int[] coin = {1, 5, 10, 25};
+        int[] coins = new int[4];
+        for (int i = 0; i < 5; i++) {
+            if (i == 0) n = Integer.parseInt(st.nextToken());
+            else coins[i - 1] = Integer.parseInt(st.nextToken());
         }
 
-        dfs(0, 0);
-
-        bw.write(String.valueOf(max));
+        int[] cnt = new int[n + 1];
+        int[] sum = new int[n + 1];
+        int[][] dp = new int[4][n + 1];
+        for (int i = 1; i <= n; i++) {
+            int max = -1;
+            int maxIndex = -1;
+            int selectedX = -1;
+            boolean flag = false;
+            for (int x = 0; x < 4; x++) {
+                if (coin[x] > i) break;
+                int pre = i - coin[x];
+                if (dp[x][pre] + 1 > coins[x]) continue;
+                if (sum[pre] + coin[x] != i) continue;
+                if (cnt[pre] > max){
+                    max = cnt[pre];
+                    maxIndex = pre;
+                    selectedX = x;
+                }
+                flag = true;
+            }
+            if (flag) {
+                cnt[i] = cnt[maxIndex] + 1;
+                sum[i] = sum[maxIndex] + coin[selectedX];
+                for (int x = 0; x < 4; x++) {
+                    dp[x][i] = dp[x][maxIndex];
+                    if (x == selectedX) dp[x][i]++;
+                }
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            bw.write(dp[i][n] + " ");
+        }
 
         br.close();
         bw.close();
