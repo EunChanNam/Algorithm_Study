@@ -6,46 +6,60 @@ public class Main {
     static int n;
     static int m;
     static int[][] map;
-    static long[][] dp;
-    static int k;
+    static int[][] dir = {{-1, -1}, {1, -1}, {1, 1}, {-1, 1}};
+    static int answer = 0;
+    static int[][] visit;
+
+    static void dfs(int y, int x, int sum) {
+        answer = Math.max(answer, sum);
+        if (y >= n) return;
+        for (int i = 0; i < 4; i++) {
+            int hap = 0;
+            int ny = y + dir[i][0];
+            int nx = x + dir[i][1];
+            if (ny < 0 || nx < 0 || ny >= n || nx >= m) continue;
+            if (visit[ny][x] == 1 || visit[y][nx] == 1 || visit[y][x] == 1) continue;
+            visit[y][x] = 1;
+            visit[ny][x] = 1;
+            visit[y][nx] = 1;
+            hap += map[y][x] * 2;
+            hap += map[ny][x];
+            hap += map[y][nx];
+            if (x < m - 1) dfs(y, x + 1, sum + hap);
+            else dfs(y + 1, 0, sum + hap);
+            visit[y][x] = 0;
+            visit[ny][x] = 0;
+            visit[y][nx] = 0;
+        }
+        if (x < m - 1) dfs(y, x + 1, sum); // 선택안하는 것도 반드시 넣어줘야함
+        else dfs(y + 1, 0, sum);
+    }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st;
         st = new StringTokenizer(br.readLine());
-        m = Integer.parseInt(st.nextToken());
         n = Integer.parseInt(st.nextToken());
-        map = new int[n + 1][m + 1];
-        dp = new long[n + 1][m + 1];
-        k = Integer.parseInt(br.readLine());
-        boolean[][][] road = new boolean[n + 1][m + 1][2];
-
-        for (int i = 0; i < k; i++) {
+        m = Integer.parseInt(st.nextToken());
+        map = new int[n][m];
+        visit = new int[n][m];
+        for (int y = 0; y < n; y++) {
             st = new StringTokenizer(br.readLine());
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
-            int c = Integer.parseInt(st.nextToken());
-            int d = Integer.parseInt(st.nextToken());
-            if (a < c) road[b][a][0] = true;
-            if (b < d) road[b][a][1] = true;
-            if (c < a) road[d][c][0] = true;
-            if (d < b) road[d][c][1] = true;
-        }
-
-        dp[0][0] = 1;
-        for (int y = 0; y < n + 1; y++) {
-            for (int x = 0; x < m + 1; x++) {
-                if (y - 1 >= 0 && !road[y - 1][x][1]) {
-                    dp[y][x] += dp[y - 1][x];
-                }
-                if (x - 1 >= 0 && !road[y][x - 1][0]) {
-                    dp[y][x] += dp[y][x - 1];
-                }
+            for (int x = 0; x < m; x++) {
+                map[y][x] = Integer.parseInt(st.nextToken());
             }
         }
 
-        bw.write(String.valueOf(dp[n][m]));
+        if (n * m < 3) {
+            bw.write("0");
+            br.close();
+            bw.close();
+            return;
+        }
+
+        dfs(0, 0, 0);
+        bw.write(String.valueOf(answer));
 
         br.close();
         bw.close();
