@@ -6,34 +6,7 @@ public class Main {
     static int n;
     static int m;
     static int[][] map;
-    static int[][] dir = {{-1, -1}, {1, -1}, {1, 1}, {-1, 1}};
-    static int answer = 0;
-    static int[][] visit;
-
-    static void dfs(int y, int x, int sum) {
-        answer = Math.max(answer, sum);
-        if (y >= n) return;
-        for (int i = 0; i < 4; i++) {
-            int hap = 0;
-            int ny = y + dir[i][0];
-            int nx = x + dir[i][1];
-            if (ny < 0 || nx < 0 || ny >= n || nx >= m) continue;
-            if (visit[ny][x] == 1 || visit[y][nx] == 1 || visit[y][x] == 1) continue;
-            visit[y][x] = 1;
-            visit[ny][x] = 1;
-            visit[y][nx] = 1;
-            hap += map[y][x] * 2;
-            hap += map[ny][x];
-            hap += map[y][nx];
-            if (x < m - 1) dfs(y, x + 1, sum + hap);
-            else dfs(y + 1, 0, sum + hap);
-            visit[y][x] = 0;
-            visit[ny][x] = 0;
-            visit[y][nx] = 0;
-        }
-        if (x < m - 1) dfs(y, x + 1, sum); // 선택안하는 것도 반드시 넣어줘야함
-        else dfs(y + 1, 0, sum);
-    }
+    static int[] plus;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -42,24 +15,46 @@ public class Main {
         st = new StringTokenizer(br.readLine());
         n = Integer.parseInt(st.nextToken());
         m = Integer.parseInt(st.nextToken());
-        map = new int[n][m];
-        visit = new int[n][m];
+        map = new int[n][n];
         for (int y = 0; y < n; y++) {
+            for (int x = 0; x < n; x++) {
+                map[y][x] = 1;
+            }
+        }
+        plus = new int[2 * n - 1];
+        for (int y = 0; y < m; y++) {
             st = new StringTokenizer(br.readLine());
-            for (int x = 0; x < m; x++) {
-                map[y][x] = Integer.parseInt(st.nextToken());
+            int t = 0;
+            for (int x = 0; x < 3; x++) {
+                int p = Integer.parseInt(st.nextToken());
+                for (int k = 0; k < p; k++) {
+                    plus[t++] += x;
+                }
             }
         }
 
-        if (n * m < 3) {
-            bw.write("0");
-            br.close();
-            bw.close();
-            return;
+        int dy = n - 1;
+        int dx = 0;
+        for (int i = 0; i < 2 * n - 1; i++) {
+            map[dy][dx] += plus[i];
+            if (dy != 0) dy--;
+            else dx++;
         }
 
-        dfs(0, 0, 0);
-        bw.write(String.valueOf(answer));
+        for (int i = 1; i < n; i++) {
+            for (int j = 1; j < n; j++) {
+                map[i][j] = Math.max(map[i - 1][j], map[i][j]);
+                map[i][j] = Math.max(map[i - 1][j - 1], map[i][j]);
+                map[i][j] = Math.max(map[i][j - 1], map[i][j]);
+            }
+        }
+
+        for (int y = 0; y < n; y++) {
+            for (int x = 0; x < n; x++) {
+                bw.write(map[y][x] + " ");
+            }
+            bw.newLine();
+        }
 
         br.close();
         bw.close();
