@@ -4,24 +4,25 @@ import java.util.*;
 
 public class Main {
     static int n;
-    static int m;
-    static int[][] arr;
-    static int[] u;
-    static List<Integer> real = new ArrayList<>();
+    static Node[][] map;
+    static Data[] d;
+    static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
 
-    static int find(int a) {
-        if (u[a] == a) return a;
-        else return u[a] = find(u[a]);
-    }
-
-    static boolean union(int a, int b) {
-        int fa = find(a);
-        int fb = find(b);
-        if (fa != fb) {
-            u[fa] = fb;
-            return false;
+    static class Node{
+        int y; int x; int cnt; int other; int val; Set<Integer> set;
+        public Node(int y, int x, int cnt, int val){
+            this.y = y;
+            this.x = x;
+            this.cnt = cnt;
+            this.other = 0;
+            this.val = val;
         }
-        return true;
+    }
+    static class Data{
+        int k; Set<Integer> set = new HashSet<>();
+        public Data(int k){
+            this.k = k;
+        }
     }
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -29,49 +30,91 @@ public class Main {
         StringTokenizer st;
         st = new StringTokenizer(br.readLine());
         n = Integer.parseInt(st.nextToken());
-        m = Integer.parseInt(st.nextToken());
-        u = new int[n + 1];
-        for (int i = 0; i <= n; i++) {
-            u[i] = i;
-        }
-        arr = new int[m][];
-        st = new StringTokenizer(br.readLine());
-        int k = Integer.parseInt(st.nextToken());
-        for (int i = 0; i < k; i++) {
-            real.add(Integer.parseInt(st.nextToken()));
-        }
-
-        for (int i = 0; i < m; i++) {
+        d = new Data[n * n];
+        map = new Node[n][n];
+        for (int i = 0; i < n * n; i++) {
             st = new StringTokenizer(br.readLine());
-            int t = Integer.parseInt(st.nextToken());
-            arr[i] = new int[t];
-            for (int j = 0; j < t; j++) {
-                int p = Integer.parseInt(st.nextToken());
-                arr[i][j] = p;
+            for (int j = 0; j < 5; j++) {
+                int k = Integer.parseInt(st.nextToken());
+                if (j == 0) {
+                    d[i] = new Data(k);
+                } else{
+                    d[i].set.add(k);
+                }
             }
         }
 
-        for (int y = 0; y < m; y++) {
-            for (int i = 0; i < arr[y].length - 1; i++) {
-                for (int j = i + 1; j < arr[y].length; j++) {
-                    union(arr[y][i], arr[y][j]);
+        for (int y = 0; y < n; y++) {
+            for (int x = 0; x < n; x++) {
+                map[y][x] = new Node(y, x, 0, 0);
+            }
+        }
+
+        for (int i = 0; i < n * n; i++) {
+            PriorityQueue<Node> que = new PriorityQueue<>((a, b) -> {
+                if (a.cnt == b.cnt) {
+                    if (a.other == b.other) {
+                        if (a.y == b.y) {
+                            return Integer.compare(a.x, b.x);
+                        } else return Integer.compare(a.y, b.y);
+                    } else return Integer.compare(b.other, a.other);
+                } else return Integer.compare(b.cnt, a.cnt);
+            });
+            for (int y = 0; y < n; y++) {
+                for (int x = 0; x < n; x++) {
+                    if (map[y][x].val != 0) continue;
+                    Node node = new Node(y, x, 0, d[i].k);
+                    for (int j = 0; j < 4; j++) {
+                        int ny = y + dir[j][0];
+                        int nx = x + dir[j][1];
+                        if (ny < 0 || nx < 0 || ny >= n || nx >= n) continue;
+                        if (d[i].set.contains(map[ny][nx].val)) {
+                            node.cnt++;
+                        }
+                        if (map[ny][nx].val == 0) node.other++;
+                    }
+                    que.offer(node);
                 }
+            }
+            Node p = que.poll();
+            map[p.y][p.x] = p;
+            map[p.y][p.x].set = d[i].set;
+        }
+
+        for (int y = 0; y < n; y++) {
+            for (int x = 0; x < n; x++) {
+                int cnt = 0;
+                for (int i = 0; i < 4; i++) {
+                    int ny = y + dir[i][0];
+                    int nx = x + dir[i][1];
+                    if (ny < 0 || nx < 0 || ny >= n || nx >= n) continue;
+                    if (map[y][x].set.contains(map[ny][nx].val)) {
+                        cnt++;
+                    }
+                }
+                map[y][x].cnt = cnt;
             }
         }
 
         int answer = 0;
-        for (int y = 0; y < m; y++) {
-            boolean flag = true;
-            for (int x = 0; x < arr[y].length; x++) {
-                for (int p : real) {
-                    if (find(p) == find(arr[y][x])) {
-                        flag = false;
-                        break;
-                    }
+        for (int y = 0; y < n; y++) {
+            for (int x = 0; x < n; x++) {
+                if (map[y][x].cnt == 0) {
+                    answer += 0;
                 }
-                if (!flag) break;
+                if (map[y][x].cnt == 1) {
+                    answer += 1;
+                }
+                if (map[y][x].cnt == 2) {
+                    answer += 10;
+                }
+                if (map[y][x].cnt == 3) {
+                    answer += 100;
+                }
+                if (map[y][x].cnt == 4) {
+                    answer += 1000;
+                }
             }
-            if (flag) answer++;
         }
 
         bw.write(String.valueOf(answer));
