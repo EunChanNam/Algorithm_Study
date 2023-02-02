@@ -5,63 +5,27 @@ import java.util.*;
 public class Main {
     static int n;
     static int m;
-    static int[][] map;
-    static int[][] visit;
-    static int[][] visit2;
-    static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
+    static List<List<Node>> list = new ArrayList<>();
+    static int[] arr;
+    static int[] dis;
 
     static class Node{
-        int y; int x; int cnt = 0;
-        public Node(int y, int x){
-            this.y = y;
-            this.x = x;
+        int k; int val;
+        public Node(int k, int val) {
+            this.k = k;
+            this.val = val;
         }
     }
-    static void bfs(int y, int x) {
-        Queue<Node> que = new LinkedList<>();
-        que.offer(new Node(y, x));
-        List<Node> list = new ArrayList<>();
-
-        while (!que.isEmpty()) {
-            Node p = que.poll();
-            for (int i = 0; i < 4; i++) {
-                int ny = p.y + dir[i][0];
-                int nx = p.x + dir[i][1];
-                if (ny < 0 || nx < 0 || ny >= n || nx >= m) continue;
-                if (visit[ny][nx] == 1) continue;
-                if (map[ny][nx] == 0) {
-                    p.cnt++;
-                    continue;
-                }
-                visit[ny][nx] = 1;
-                que.offer(new Node(ny, nx));
-            }
-            list.add(p);
-        }
-        for (Node p : list) {
-            int val = map[p.y][p.x] - p.cnt;
-            if (val < 0) val = 0;
-            map[p.y][p.x] = val;
-        }
+    static int find(int a) {
+        if (arr[a] == a) return a;
+        else return arr[a] = find(arr[a]);
+    }
+    static void union(int a, int b) {
+        int fa = find(a);
+        int fb = find(b);
+        if (fa != fb) arr[fa] = fb;
     }
 
-    static void check(int y, int x) {
-        Queue<Node> que = new LinkedList<>();
-        que.offer(new Node(y, x));
-
-        while (!que.isEmpty()) {
-            Node p = que.poll();
-            for (int i = 0; i < 4; i++) {
-                int ny = p.y + dir[i][0];
-                int nx = p.x + dir[i][1];
-                if (ny < 0 || nx < 0 || ny >= n || nx >= m) continue;
-                if (visit2[ny][nx] == 1) continue;
-                if (map[ny][nx] == 0) continue;
-                visit2[ny][nx] = 1;
-                que.offer(new Node(ny, nx));
-            }
-        }
-    }
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
@@ -69,50 +33,67 @@ public class Main {
         st = new StringTokenizer(br.readLine());
         n = Integer.parseInt(st.nextToken());
         m = Integer.parseInt(st.nextToken());
-        map = new int[n][m];
-        for (int y = 0; y < n; y++) {
-            st = new StringTokenizer(br.readLine());
-            for (int x = 0; x < m; x++) {
-                map[y][x] = Integer.parseInt(st.nextToken());
-            }
+        arr = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            arr[i] = i;
+        }
+        for (int i = 0; i <= n; i++) {
+            list.add(new ArrayList<>());
         }
 
+        for (int i = 0; i < m; i++) {
+            st = new StringTokenizer(br.readLine());
+            int a = Integer.parseInt(st.nextToken());
+            int b = Integer.parseInt(st.nextToken());
+            int c = Integer.parseInt(st.nextToken());
+            union(a, b);
+            list.get(a).add(new Node(b, c));
+            list.get(b).add(new Node(a, c));
+        }
+        st = new StringTokenizer(br.readLine());
+        int a = Integer.parseInt(st.nextToken());
+        int b = Integer.parseInt(st.nextToken());
         int answer = 0;
-        while (true) {
-            int rand = 0;
-            answer++;
-            visit = new int[n][m];
-            for (int y = 0; y < n; y++) {
-                for (int x = 0; x < m; x++) {
-                    if (map[y][x] == 0) continue;
-                    if (visit[y][x] == 1) continue;
-                    visit[y][x] = 1;
-                    bfs(y, x);
-                }
-            }
+        if (find(a) != find(b) || find(a) != find(n) || find(b) != find(n)) {
+            answer = -1;
+        } else {
+            int dis1 = getMinDis(1, a);
+            dis1 += getMinDis(a, b);
+            dis1 += getMinDis(b, n);
 
-            visit2 = new int[n][m];
-            for (int y = 0; y < n; y++) {
-                for (int x = 0; x < m; x++) {
-                    if (map[y][x] == 0) continue;
-                    if (visit2[y][x] == 1) continue;
-                    visit2[y][x] = 1;
-                    check(y, x);
-                    rand++;
-                }
-            }
-            if (rand == 0){
-                answer = 0;
-                break;
-            }
-            if (rand > 1) {
-                break;
-            }
+            int dis2 = getMinDis(1, b);
+            dis2 += getMinDis(b, a);
+            dis2 += getMinDis(a, n);
+
+            answer = Math.min(dis1, dis2);
         }
 
         bw.write(String.valueOf(answer));
 
         br.close();
         bw.close();
+    }
+    static int getMinDis(int start, int end) {
+        dis = new int[n + 1];
+        for (int i = 0; i <= n; i++) {
+            dis[i] = Integer.MAX_VALUE;
+        }
+        dis[start] = 0;
+        PriorityQueue<Node> que = new PriorityQueue<>(Comparator.comparingInt(a -> a.val));
+        que.offer(new Node(start, 0));
+        int[] visit = new int[n + 1];
+        while (!que.isEmpty()) {
+            Node now = que.poll();
+            visit[now.k] = 1;
+            for (Node next : list.get(now.k)) {
+                if (visit[next.k] == 1) continue;
+                int sum = now.val + next.val;
+                if (sum < dis[next.k]) {
+                    dis[next.k] = sum;
+                    que.offer(new Node(next.k, sum));
+                }
+            }
+        }
+        return dis[end];
     }
 }
