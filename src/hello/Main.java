@@ -1,62 +1,49 @@
 package hello;
+
 import java.io.*;
 import java.util.*;
 
 public class Main {
     static int n;
-    static int[][] map;
-    static int[][] visit;
-    static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
-
+    static int m;
     static class Node{
-        int y; int x; int level;
-        public Node(int y, int x, int level){
-            this.y = y;
-            this.x = x;
+        int k; int level;
+        public Node(int k, int level){
+            this.k = k;
             this.level = level;
         }
     }
-    static void init(int rand, int y, int x) {
-        visit[y][x] = 1;
-        Queue<Node> que = new LinkedList<>();
-        que.offer(new Node(y, x, 0));
-        while (!que.isEmpty()) {
-            Node p = que.poll();
-            map[p.y][p.x] = rand;
-            for (int i = 0; i < 4; i++) {
-                int ny = p.y + dir[i][0];
-                int nx = p.x + dir[i][1];
-                if (ny < 0 || nx < 0 || ny >= n || nx >= n) continue;
-                if (visit[ny][nx] == 1) continue;
-                if (map[ny][nx] == 1) {
-                    visit[ny][nx] = 1;
-                    que.offer(new Node(ny, nx, 0));
-                }
-            }
-        }
-    }
 
-    static int bfs(int y, int x, int rand) {
-        visit = new int[n][n];
-        visit[y][x] = 1;
+    static int cnt = 0;
+    static int goalLevel;
+    static void bfs(int start) {
+        int[] visit = new int[200001];
+        visit[start] = 1;
+        goalLevel = Integer.MAX_VALUE;
         Queue<Node> que = new LinkedList<>();
-        que.offer(new Node(y, x, 0));
+        que.offer(new Node(start, 0));
+
         while (!que.isEmpty()) {
             Node p = que.poll();
-            if (map[p.y][p.x] != 0 && map[p.y][p.x] != rand) {
-                return p.level;
+            if (p.level > goalLevel) continue;
+            if (p.k == m) {
+                goalLevel = p.level;
+                cnt++;
+                continue;
             }
-            for (int i = 0; i < 4; i++) {
-                int ny = p.y + dir[i][0];
-                int nx = p.x + dir[i][1];
-                if (ny < 0 || nx < 0 || ny >= n || nx >= n) continue;
-                if (visit[ny][nx] == 1) continue;
-                if (map[ny][nx] == rand) continue;
-                visit[ny][nx] = 1;
-                que.offer(new Node(ny, nx, p.level + 1));
+            if (p.k > 0 && (visit[p.k - 1] == 0 || visit[p.k - 1] == p.level)) {
+                visit[p.k - 1] = p.level;
+                que.offer(new Node(p.k - 1, p.level + 1));
+            }
+            if (p.k < 200000 && (visit[p.k + 1] == 0 || visit[p.k + 1] == p.level)) {
+                visit[p.k + 1] = p.level;
+                que.offer(new Node(p.k + 1, p.level + 1));
+            }
+            if (p.k <= 100000 && (visit[p.k * 2] == 0 || visit[p.k * 2] == p.level)) {
+                visit[p.k * 2] = p.level;
+                que.offer(new Node(p.k * 2, p.level + 1));
             }
         }
-        return Integer.MAX_VALUE;
     }
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -64,46 +51,13 @@ public class Main {
         StringTokenizer st;
         st = new StringTokenizer(br.readLine());
         n = Integer.parseInt(st.nextToken());
-        map = new int[n][n];
-        for (int y = 0; y < n; y++) {
-            st = new StringTokenizer(br.readLine());
-            for (int x = 0; x < n; x++) {
-                map[y][x] = Integer.parseInt(st.nextToken());
-            }
-        }
+        m = Integer.parseInt(st.nextToken());
 
-        int rand = 1;
-        visit = new int[n][n];
-        for (int y = 0; y < n; y++) {
-            for (int x = 0; x < n; x++) {
-                if (visit[y][x] == 1) continue;
-                if (map[y][x] == 0) continue;
-                init(rand, y, x);
-                rand++;
-            }
-        }
+        bfs(n);
 
-        int answer = Integer.MAX_VALUE;
-        for (int y = 0; y < n; y++) {
-            for (int x = 0; x < n; x++) {
-                boolean flag = false;
-                if (map[y][x] == 0) continue;
-                for (int i = 0; i < 4; i++) {
-                    int ny = y + dir[i][0];
-                    int nx = x + dir[i][1];
-                    if (ny < 0 || nx < 0 || ny >= n || nx >= n) continue;
-                    if (map[ny][nx] == 0) {
-                        flag = true;
-                        break;
-                    }
-                }
-                if (flag) {
-                    answer = Math.min(answer, bfs(y, x, map[y][x]));
-                }
-            }
-        }
-
-        bw.write(String.valueOf(answer - 1));
+        bw.write(String.valueOf(goalLevel));
+        bw.newLine();
+        bw.write(String.valueOf(cnt));
 
         br.close();
         bw.close();
