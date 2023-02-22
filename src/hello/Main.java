@@ -6,45 +6,44 @@ import java.util.*;
 public class Main {
     static int n;
     static int m;
-    static class Node{
-        int k; int level;
-        public Node(int k, int level){
-            this.k = k;
-            this.level = level;
+    static int[][] map;
+    static int[][] visit;
+    static int[][] dir = {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+
+    static int answer = 0;
+    static void dfs(int y, int x, int sum) {
+        if (y >= n) return;
+        if (visit[y][x] == 1) {
+            if (x < m - 1) dfs(y, x + 1, sum);
+            else dfs(y + 1, 0, sum);
+            return;
         }
+
+        //skip 하는 부분
+        if (x < m - 1) dfs(y, x + 1, sum);
+        else dfs(y + 1, 0, sum);
+        //연산 하는 부분
+        visit[y][x] = 1;
+        for (int i = 0; i < 4; i++) {
+            int ny = y + dir[i][0];
+            int nx = x + dir[i][1];
+            if (ny < 0 || nx < 0 || ny >= n || nx >= m) continue;
+            if (visit[ny][x] == 1 || visit[y][nx] == 1) continue;
+            visit[ny][x] = 1;
+            visit[y][nx] = 1;
+            int nextSum = sum;
+            nextSum += map[y][x] * 2;
+            nextSum += map[ny][x];
+            nextSum += map[y][nx];
+            answer = Math.max(answer, nextSum);
+            if (x < m - 1) dfs(y, x + 1, nextSum);
+            else dfs(y + 1, 0, nextSum);
+            visit[ny][x] = 0;
+            visit[y][nx] = 0;
+        }
+        visit[y][x] = 0;
     }
 
-    static int cnt = 0;
-    static int goalLevel;
-    static void bfs(int start) {
-        int[] visit = new int[200001];
-        visit[start] = 1;
-        goalLevel = Integer.MAX_VALUE;
-        Queue<Node> que = new LinkedList<>();
-        que.offer(new Node(start, 0));
-
-        while (!que.isEmpty()) {
-            Node p = que.poll();
-            if (p.level > goalLevel) continue;
-            if (p.k == m) {
-                goalLevel = p.level;
-                cnt++;
-                continue;
-            }
-            if (p.k > 0 && (visit[p.k - 1] == 0 || visit[p.k - 1] == p.level)) {
-                visit[p.k - 1] = p.level;
-                que.offer(new Node(p.k - 1, p.level + 1));
-            }
-            if (p.k < 200000 && (visit[p.k + 1] == 0 || visit[p.k + 1] == p.level)) {
-                visit[p.k + 1] = p.level;
-                que.offer(new Node(p.k + 1, p.level + 1));
-            }
-            if (p.k <= 100000 && (visit[p.k * 2] == 0 || visit[p.k * 2] == p.level)) {
-                visit[p.k * 2] = p.level;
-                que.offer(new Node(p.k * 2, p.level + 1));
-            }
-        }
-    }
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
@@ -52,12 +51,18 @@ public class Main {
         st = new StringTokenizer(br.readLine());
         n = Integer.parseInt(st.nextToken());
         m = Integer.parseInt(st.nextToken());
+        map = new int[n][m];
+        for (int y = 0; y < n; y++) {
+            st = new StringTokenizer(br.readLine());
+            for (int x = 0; x < m; x++) {
+                map[y][x] = Integer.parseInt(st.nextToken());
+            }
+        }
 
-        bfs(n);
+        visit = new int[n][m];
+        dfs(0, 0, 0);
 
-        bw.write(String.valueOf(goalLevel));
-        bw.newLine();
-        bw.write(String.valueOf(cnt));
+        bw.write(String.valueOf(answer));
 
         br.close();
         bw.close();
