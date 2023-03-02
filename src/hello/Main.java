@@ -5,65 +5,75 @@ import java.util.*;
 
 public class Main {
     static int n;
-    static int m;
-    static int[] arr;
-    static List<List<Integer>> list = new ArrayList<>();
-
-    static int find(int a) {
-        if (arr[a] == a) return a;
-        else return arr[a] = find(arr[a]);
-    }
-
-    static void union(int a, int b) {
-        int fa = find(a);
-        int fb = find(b);
-        if (fa != fb) arr[fa] = fb;
-    }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st = new StringTokenizer(br.readLine());
         n = Integer.parseInt(st.nextToken());
-        m = Integer.parseInt(br.readLine());
-        arr = new int[n + 1];
-        for (int i = 0; i <= n; i++) {
-            list.add(new ArrayList<>());
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            String s = br.readLine();
+            sb.append(s);
         }
 
-        for (int i = 0; i <= n; i++) {
-            arr[i] = i;
-        }
+        String str = sb.toString();
+        String answer = "";
+        int lt = 0;
+        int rt = n - 1;
 
-        for (int i = 0; i < m; i++) {
-            st = new StringTokenizer(br.readLine());
-            String s = st.nextToken();
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
-            if (s.equals("F")) {
-                union(a, b);
-            } else {
-                list.get(a).add(b);
-                list.get(b).add(a);
+        while (rt >= lt) {
+            char left = str.charAt(lt);
+            char right = str.charAt(rt);
+            if (rt == lt) {
+                answer += left;
+                break;
             }
-        }
-
-        for (int i = 0; i < list.size(); i++) {
-            List<Integer> temp = list.get(i);
-            for (int k : temp) {
-                List<Integer> temp2 = list.get(k);
-                for (int t : temp2) {
-                    union(i, t);
+            else if (left < right) {
+                answer += left;
+                lt++;
+            } else if (right < left) {
+                answer += right;
+                rt--;
+            } else {
+                if (rt - 1 == lt) {
+                    answer += left;
+                    answer += right;
+                    break;
+                }
+                int lt2 = lt + 1;
+                int rt2 = rt - 1;
+                while (true) {
+                    if (lt2 >= rt2) {
+                        answer += left;
+                        answer += right;
+                        lt++; rt--;
+                        break;
+                    }
+                    char left2 = str.charAt(lt2);
+                    char right2 = str.charAt(rt2);
+                    if (left2 < right2) {
+                        answer += left;
+                        lt++;
+                        break;
+                    }
+                    if (right2 < left2) {
+                        answer += right;
+                        rt--;
+                        break;
+                    }
+                    else {
+                        lt2++; rt2--;
+                    }
                 }
             }
         }
 
-        Set<Integer> set = new HashSet<>();
-        for (int i = 1; i <= n; i++) {
-            set.add(find(i));
+        for (int i = 0; i < n; i++) {
+            if (i % 80 == 0 && i != 0) bw.newLine();
+            bw.write(String.valueOf(answer.charAt(i)));
         }
-
-        bw.write(String.valueOf(set.size()));
 
         br.close();
         bw.close();
