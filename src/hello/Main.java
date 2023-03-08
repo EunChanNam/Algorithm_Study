@@ -5,76 +5,103 @@ import java.util.*;
 
 public class Main {
     static int n;
+    static int m;
+    static int[][] map;
+    static List<Node> fire;
+    static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
+
+    static class Node{
+        int y; int x; int level;
+        public Node (int y, int x, int level){
+            this.y = y;
+            this.x = x;
+            this.level = level;
+        }
+    }
+
+    static int answer = -1;
+    static void bfs(Node start) {
+        int now = -1;
+        int[][] visit = new int[n][m];
+        visit[start.y][start.x] = 1;
+        Queue<Node> que = new LinkedList<>();
+        que.offer(start);
+
+        while (!que.isEmpty()) {
+            Node p = que.poll();
+            if (p.level > now) {
+                now = p.level;
+                List<Node> temp = new ArrayList<>();
+                for (Node f : fire) {
+                    for (int i = 0; i < 4; i++) {
+                        int ny = f.y + dir[i][0];
+                        int nx = f.x + dir[i][1];
+                        if (ny < 0 || nx < 0 || ny >= n || nx >= m) continue;
+                        if (map[ny][nx] == 1) {
+                            map[ny][nx] = -1;
+                            temp.add(new Node(ny, nx, 0));
+                        }
+                    }
+                }
+                fire = new ArrayList<>(temp);
+            }
+            for (int i = 0; i < 4; i++) {
+                int ny = p.y + dir[i][0];
+                int nx = p.x + dir[i][1];
+                if (ny < 0 || nx < 0 || ny >= n || nx >= m) {
+                    answer = p.level;
+                    return;
+                }
+            }
+            for (int i = 0; i < 4; i++) {
+                int ny = p.y + dir[i][0];
+                int nx = p.x + dir[i][1];
+                if (ny < 0 || nx < 0 || ny >= n || nx >= m) continue;
+                if (visit[ny][nx] == 1) continue;
+                if (map[ny][nx] == 1){
+                    visit[ny][nx] = 1;
+                    que.offer(new Node(ny, nx, p.level + 1));
+                }
+            }
+        }
+    }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-        StringTokenizer st = new StringTokenizer(br.readLine());
-        n = Integer.parseInt(st.nextToken());
+        int k = Integer.parseInt(br.readLine());
 
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < n; i++) {
-            String s = br.readLine();
-            sb.append(s);
-        }
-
-        String str = sb.toString();
-        String answer = "";
-        int lt = 0;
-        int rt = n - 1;
-
-        while (rt >= lt) {
-            char left = str.charAt(lt);
-            char right = str.charAt(rt);
-            if (rt == lt) {
-                answer += left;
-                break;
-            }
-            else if (left < right) {
-                answer += left;
-                lt++;
-            } else if (right < left) {
-                answer += right;
-                rt--;
-            } else {
-                if (rt - 1 == lt) {
-                    answer += left;
-                    answer += right;
-                    break;
-                }
-                int lt2 = lt + 1;
-                int rt2 = rt - 1;
-                while (true) {
-                    if (lt2 >= rt2) {
-                        answer += left;
-                        answer += right;
-                        lt++; rt--;
-                        break;
+        for (int i=0; i < k; i++){
+            answer = -1;
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            m = Integer.parseInt(st.nextToken());
+            n = Integer.parseInt(st.nextToken());
+            map = new int[n][m];
+            fire = new ArrayList<>();
+            Node start = null;
+            for (int y = 0; y < n; y++) {
+                String s = br.readLine();
+                for (int x = 0; x < m; x++) {
+                    char ch = s.charAt(x);
+                    if (ch == '#') map[y][x] = 0;
+                    if (ch == '.') map[y][x] = 1;
+                    if (ch == '@') {
+                        map[y][x] = 2;
+                        start = new Node(y, x, 0);
                     }
-                    char left2 = str.charAt(lt2);
-                    char right2 = str.charAt(rt2);
-                    if (left2 < right2) {
-                        answer += left;
-                        lt++;
-                        break;
-                    }
-                    if (right2 < left2) {
-                        answer += right;
-                        rt--;
-                        break;
-                    }
-                    else {
-                        lt2++; rt2--;
+                    if (ch == '*') {
+                        map[y][x] = -1;
+                        fire.add(new Node(y, x, 0));
                     }
                 }
             }
-        }
 
-        for (int i = 0; i < n; i++) {
-            if (i % 80 == 0 && i != 0) bw.newLine();
-            bw.write(String.valueOf(answer.charAt(i)));
-        }
+            bfs(start);
 
+            if (answer == -1) bw.write("IMPOSSIBLE");
+            else bw.write(String.valueOf(answer + 1));
+            bw.newLine();
+        }
         br.close();
         bw.close();
     }
