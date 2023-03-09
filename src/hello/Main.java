@@ -8,66 +8,65 @@ public class Main {
     static int m;
     static int[][] map;
     static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
-    static Queue<Point> que;
-    static int[][] visit;
-    static int goal = 0;
-    static int answer = 0;
 
-    static class Point{
-        int y; int x; int level;
-        public Point(int y, int x, int level){
+    static class Node{
+        int y; int x; int level; int b;
+        public Node(int y, int x, int level, int b) {
             this.y = y;
             this.x = x;
             this.level = level;
+            this.b = b;
         }
     }
 
-    static int bfs() {
-        int cnt = 0;
+    static int bfs(Node start) {
+        Queue<Node> que = new LinkedList<>();
+        que.offer(start);
+        int[][][] visit = new int[2][n][m];
+        visit[0][0][0] = 1;
+        visit[1][0][0] = 1;
+
         while (!que.isEmpty()) {
-            Point p = que.poll();
-            cnt = p.level;
+            Node p = que.poll();
+            if (p.y == n - 1 && p.x == m - 1) return p.level;
+
             for (int i = 0; i < 4; i++) {
                 int ny = p.y + dir[i][0];
                 int nx = p.x + dir[i][1];
                 if (ny < 0 || nx < 0 || ny >= n || nx >= m) continue;
-                if (visit[ny][nx] == 1) continue;
-                if (map[ny][nx] == 0){
-                    visit[ny][nx] = 1;
-                    que.offer(new Point(ny, nx, p.level + 1));
-                    goal--;
+                if (visit[p.b][ny][nx] == 1) continue; // 단순 방문처리
+                if (p.b == 1 && visit[0][ny][nx] == 1) continue; // 그리디한 방문처리
+                if (p.b == 1 && map[ny][nx] == 1) continue; // 벽을 더이상 못부숨
+                if (p.b == 0 && map[ny][nx] == 1) { // 벽읇 부술 때
+                    visit[1][ny][nx] = 1;
+                    que.offer(new Node(ny, nx, p.level + 1, 1));
+                    continue;
                 }
+                visit[p.b][ny][nx] = 1;
+                que.offer(new Node(ny, nx, p.level + 1, p.b));
             }
         }
-        return cnt;
+        return -1;
     }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st = new StringTokenizer(br.readLine());
-        m = Integer.parseInt(st.nextToken());
         n = Integer.parseInt(st.nextToken());
+        m = Integer.parseInt(st.nextToken());
         map = new int[n][m];
-        que = new LinkedList<>();
-        visit = new int[n][m];
 
         for (int y = 0; y < n; y++) {
-            st = new StringTokenizer(br.readLine());
+            String s = br.readLine();
             for (int x = 0; x < m; x++) {
-                map[y][x] = Integer.parseInt(st.nextToken());
-                if (map[y][x] == 1) {
-                    que.offer(new Point(y, x, 0));
-                    visit[y][x] = 1;
-                }
-                if (map[y][x] == 0) goal++;
+                map[y][x] = s.charAt(x) - '0';
             }
         }
 
-        int result = bfs();
+        int result = bfs(new Node(0, 0, 1, 0));
 
-        if (goal == 0) bw.write(String.valueOf(result));
-        else bw.write(String.valueOf(-1));
+        bw.write(String.valueOf(result));
 
         br.close();
         bw.close();
