@@ -5,14 +5,6 @@ import java.util.*;
 
 public class Main {
 
-    static class Node {
-        int start; int end;
-        public Node(int start, int end){
-            this.start = start;
-            this.end = end;
-        }
-    }
-
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
@@ -20,40 +12,24 @@ public class Main {
 
         int n = Integer.parseInt(st.nextToken());
 
-        Node[] arr = new Node[n];
+        int[] arr = new int[n];
+        int[] dp = new int[n];
+        st = new StringTokenizer(br.readLine());
         for (int i = 0; i < n; i++) {
-            st = new StringTokenizer(br.readLine());
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
-            arr[i] = new Node(a, b);
+            arr[i] = Integer.parseInt(st.nextToken());
         }
 
-        Arrays.sort(arr, (a, b) -> {
-            if (a.start == b.start) {
-                return Integer.compare(a.end, b.end);
-            }
-            return Integer.compare(a.start, b.start);
-        });
-
-        int start = arr[0].start;
-        int end = arr[0].end;
-        int len = 0;
-        for (int i = 1; i < n; i++) {
-            Node now = arr[i];
-            if (now.start > end) {
-                len += end - start;
-                start = now.start;
-                end = now.end;
-                continue;
-            }
-            if (now.end > end) {
-                end = now.end;
+        for (int y = 1; y < n; y++) {
+            for (int x = 0; x <= y; x++) {
+                int abs = Math.abs(arr[y] - arr[x]);
+                int next;
+                if (x == 0) next = abs;
+                else next = abs + dp[x - 1];
+                dp[y] = Math.max(dp[y], next);
             }
         }
 
-        int answer = len + end - start;
-
-        bw.write(String.valueOf(answer));
+        bw.write(String.valueOf(dp[n - 1]));
 
         br.close();
         bw.close();
