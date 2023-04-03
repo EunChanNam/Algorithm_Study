@@ -7,71 +7,104 @@ public class Main {
 
     static int n;
     static int m;
-    static int k;
-    static int[][] map;
-    static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
+    static int D;
+    static List<List<Integer>> map = new ArrayList<>();
+    static List<List<Integer>> tempMap;
+    static List<Point> hunters = new ArrayList<>();
+
+    static int answer = 0;
 
     static class Node{
-        int y; int x; int level; int breakCnt;
-        public Node(int y, int x, int level, int breakCnt) {
+        int y; int x; int dis;
+        public Node(int y, int x, int dis) {
             this.y = y;
             this.x = x;
-            this.level = level;
-            this.breakCnt = breakCnt;
+            this.dis = dis;
         }
     }
 
-    static int bfs() {
-        int[][][] visit = new int[k + 1][n][m];
-        visit[0][0][0] = 1;
-        visit[1][0][0] = 1;
+    static class Point {
+        int y; int x;
+        public Point(int y, int x) {
+            this.y = y;
+            this.x = x;
+        }
+    }
 
-        Queue<Node> que = new ArrayDeque<>();
-        que.offer(new Node(0, 0, 0, 0));
+    static int doShot() {
+        int cnt = 0;
+        while (true) {
+            List<Node> shots = new ArrayList<>();
+            PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> {
+                if (a.dis == b.dis) return Integer.compare(a.x, b.x);
+                return Integer.compare(a.dis, b.dis);
+            } );
 
-        boolean day = true;
-        int now = 0;
-
-        while (!que.isEmpty()) {
-            Node p = que.poll();
-            // 종료 조건
-            if (p.y == n - 1 && p.x == m - 1) {
-                return p.level;
-            }
-            // 낮 밤 교체
-            if (now != p.level) {
-                day = !day;
-                now = p.level;
-            }
-
-            for (int i = 0; i < 4; i++) {
-                int ny = p.y + dir[i][0];
-                int nx = p.x + dir[i][1];
-                if (ny < 0 || nx < 0 || ny >= n || nx >= m) continue;
-                if (visit[p.breakCnt][ny][nx] == 1) continue;
-                //벽없어서 그냥 넘어가는 경우
-                if (map[ny][nx] == 0) {
-                    for (int j = p.breakCnt; j <= k; j++) {
-                        visit[j][ny][nx] = 1;
+            for (Point hunter : hunters) {
+                pq.clear();
+                boolean flag = false;
+                for (int x = 0; x < m; x++) {
+                    List<Integer> list = tempMap.get(x);
+                    for (int y = 0; y < list.size(); y++) {
+                        if (list.get(y) == 1) {
+                            int dis = getDis(hunter, y, x);
+                            if (dis <= D) {
+                                pq.offer(new Node(y, x, dis));
+                            }
+                            flag = true;
+                        }
                     }
-                    que.offer(new Node(ny, nx, p.level + 1, p.breakCnt));
-                    continue;
                 }
-                //낮에 벽을 부수고 가는 경우
-                if (p.breakCnt < k && day) {
-                    for (int j = p.breakCnt + 1; j <= k; j++) {
-                        visit[j][ny][nx] = 1;
-                    }
-                    que.offer(new Node(ny, nx, p.level + 1, p.breakCnt + 1));
+                if (!flag) {
+                    return cnt;
                 }
-                //밤이라 벽을 못 부수는 경우
-                if (p.breakCnt < k && !day) {
-                    que.offer(new Node(p.y, p.x, p.level + 1, p.breakCnt));
+                if (!pq.isEmpty()) {
+                    shots.add(pq.poll());
                 }
-                //모두 소진해서 벽을 못부수는 경우 그냥 종료
+            }
+
+            for (Node shot : shots) {
+                if (tempMap.get(shot.x).get(shot.y) != 0) {
+                    cnt++;
+                    tempMap.get(shot.x).set(shot.y, 0);
+                }
+            }
+
+            for (int i = 0; i < m; i++) {
+                tempMap.get(i).remove(0);
             }
         }
-        return -1;
+    }
+
+    static int getDis(Point hunter, int enemyY, int enemyX) {
+        int a = Math.abs(hunter.y - enemyY);
+        int b = Math.abs(hunter.x - enemyX);
+        return a + b;
+    }
+
+    static void run(int level, int start) {
+        if (level == 3) {
+            deepCopyMap();
+            int result = doShot();
+            answer = Math.max(answer, result);
+            return;
+        }
+
+        for (int i = start; i < m; i++) {
+            hunters.add(new Point(-1, i));
+            run(level + 1, i + 1);
+            hunters.remove(hunters.size() - 1);
+        }
+    }
+
+    static void deepCopyMap() {
+        tempMap = new ArrayList<>();
+        for (int i = 0; i < m; i++) {
+            tempMap.add(new ArrayList<>());
+        }
+        for (int i = 0; i < m; i++) {
+            tempMap.get(i).addAll(map.get(i));
+        }
     }
 
     public static void main(String[] args) throws IOException {
@@ -81,25 +114,36 @@ public class Main {
 
         n = Integer.parseInt(st.nextToken());
         m = Integer.parseInt(st.nextToken());
-        k = Integer.parseInt(st.nextToken());
-        map = new int[n][m];
+        D = Integer.parseInt(st.nextToken());
+
+        for (int i = 0; i < m; i++) {
+            map.add(new ArrayList<>());
+        }
+
+        List<Stack<Integer>> stacks = new ArrayList<>();
+        for (int i = 0; i < m; i++) {
+            stacks.add(new Stack<>());
+        }
+
         for (int y = 0; y < n; y++) {
-            String s = br.readLine();
+            st = new StringTokenizer(br.readLine());
             for (int x = 0; x < m; x++) {
-                map[y][x] = s.charAt(x) - '0';
+                int input = Integer.parseInt(st.nextToken());
+                stacks.get(x).push(input);
             }
         }
 
-
-        int answer = bfs();
-
-        if (answer == -1) {
-            bw.write(String.valueOf(answer));
-        } else {
-            bw.write(String.valueOf(answer + 1));
+        for (int x = 0; x < m; x++) {
+            Stack<Integer> stack = stacks.get(x);
+            List<Integer> list = map.get(x);
+            while (!stack.isEmpty()) {
+                list.add(stack.pop());
+            }
         }
 
+        run(0, 0);
 
+        bw.write(String.valueOf(answer));
 
         br.close();
         bw.close();
