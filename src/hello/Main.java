@@ -6,104 +6,30 @@ import java.util.*;
 public class Main {
 
     static int n;
-    static int m;
-    static int D;
-    static List<List<Integer>> map = new ArrayList<>();
-    static List<List<Integer>> tempMap;
-    static List<Point> hunters = new ArrayList<>();
+    static List<List<Node>> map = new ArrayList<>();
 
-    static int answer = 0;
-
-    static class Node{
-        int y; int x; int dis;
-        public Node(int y, int x, int dis) {
-            this.y = y;
-            this.x = x;
-            this.dis = dis;
+    static class Node {
+        int e; int cost;
+        public Node(int e, int cost) {
+            this.e = e;
+            this.cost = cost;
         }
     }
 
-    static class Point {
-        int y; int x;
-        public Point(int y, int x) {
-            this.y = y;
-            this.x = x;
-        }
-    }
-
-    static int doShot() {
-        int cnt = 0;
-        while (true) {
-            List<Node> shots = new ArrayList<>();
-            PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> {
-                if (a.dis == b.dis) return Integer.compare(a.x, b.x);
-                return Integer.compare(a.dis, b.dis);
-            } );
-
-            for (Point hunter : hunters) {
-                pq.clear();
-                boolean flag = false;
-                for (int x = 0; x < m; x++) {
-                    List<Integer> list = tempMap.get(x);
-                    for (int y = 0; y < list.size(); y++) {
-                        if (list.get(y) == 1) {
-                            int dis = getDis(hunter, y, x);
-                            if (dis <= D) {
-                                pq.offer(new Node(y, x, dis));
-                            }
-                            flag = true;
-                        }
-                    }
-                }
-                if (!flag) {
-                    return cnt;
-                }
-                if (!pq.isEmpty()) {
-                    shots.add(pq.poll());
-                }
-            }
-
-            for (Node shot : shots) {
-                if (tempMap.get(shot.x).get(shot.y) != 0) {
-                    cnt++;
-                    tempMap.get(shot.x).set(shot.y, 0);
-                }
-            }
-
-            for (int i = 0; i < m; i++) {
-                tempMap.get(i).remove(0);
-            }
-        }
-    }
-
-    static int getDis(Point hunter, int enemyY, int enemyX) {
-        int a = Math.abs(hunter.y - enemyY);
-        int b = Math.abs(hunter.x - enemyX);
-        return a + b;
-    }
-
-    static void run(int level, int start) {
-        if (level == 3) {
-            deepCopyMap();
-            int result = doShot();
-            answer = Math.max(answer, result);
-            return;
+    static int[] visit;
+    static int max = -999;
+    static int maxNode;
+    static void dfs(int now, int sum) {
+        if (sum > max) {
+            max = sum;
+            maxNode = now;
         }
 
-        for (int i = start; i < m; i++) {
-            hunters.add(new Point(-1, i));
-            run(level + 1, i + 1);
-            hunters.remove(hunters.size() - 1);
-        }
-    }
-
-    static void deepCopyMap() {
-        tempMap = new ArrayList<>();
-        for (int i = 0; i < m; i++) {
-            tempMap.add(new ArrayList<>());
-        }
-        for (int i = 0; i < m; i++) {
-            tempMap.get(i).addAll(map.get(i));
+        List<Node> list = map.get(now);
+        for (Node next : list) {
+            if (visit[next.e] == 1) continue;
+            visit[next.e] = 1;
+            dfs(next.e, sum + next.cost);
         }
     }
 
@@ -113,37 +39,41 @@ public class Main {
         StringTokenizer st = new StringTokenizer(br.readLine());
 
         n = Integer.parseInt(st.nextToken());
-        m = Integer.parseInt(st.nextToken());
-        D = Integer.parseInt(st.nextToken());
-
-        for (int i = 0; i < m; i++) {
+        for (int i = 0; i <= n; i++) {
             map.add(new ArrayList<>());
         }
 
-        List<Stack<Integer>> stacks = new ArrayList<>();
-        for (int i = 0; i < m; i++) {
-            stacks.add(new Stack<>());
-        }
-
-        for (int y = 0; y < n; y++) {
+        for (int i = 0; i < n; i++) {
             st = new StringTokenizer(br.readLine());
-            for (int x = 0; x < m; x++) {
-                int input = Integer.parseInt(st.nextToken());
-                stacks.get(x).push(input);
+            int start = Integer.parseInt(st.nextToken());
+            int t = 0;
+            int end = 0;
+            while (true) {
+                int next = Integer.parseInt(st.nextToken());
+                if (next == -1) break;
+                if (t % 2 == 0) {
+                    end = next;
+                }
+                if (t % 2 == 1) {
+                    map.get(start).add(new Node(end, next));
+                }
+                t++;
             }
         }
 
-        for (int x = 0; x < m; x++) {
-            Stack<Integer> stack = stacks.get(x);
-            List<Integer> list = map.get(x);
-            while (!stack.isEmpty()) {
-                list.add(stack.pop());
-            }
+        for (int i = 0; i <= n; i++) {
+            if (map.get(i).size() == 0) continue;
+            visit = new int[n + 1];
+            visit[i] = 1;
+            dfs(i, 0);
+            break;
         }
 
-        run(0, 0);
+        visit = new int[n + 1];
+        visit[maxNode] = 1;
+        dfs(maxNode, 0);
 
-        bw.write(String.valueOf(answer));
+        bw.write(String.valueOf(max));
 
         br.close();
         bw.close();
