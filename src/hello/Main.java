@@ -2,95 +2,63 @@ package hello;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.IntStream;
 
 public class Main {
 
-    static int[][] dir = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
-
     static int n;
-    static int m;
-    static int[][] map;
+    static int k;
+    static int combo;
+    static int coupon;
 
-    static class Node {
-        int y; int x; int level;
+    static List<Integer> dishes = new ArrayList<>();
 
-        public Node(int y, int x, int level) {
-            this.y = y;
-            this.x = x;
-            this.level = level;
-        }
+    static void initSlide(Map<Integer, Integer> slide) {
+        IntStream.range(0, combo)
+                .forEach(i -> {
+                    int target = dishes.get(i);
+                    slide.put(target, slide.getOrDefault(target, 0) + 1);
+                });
     }
 
-    static int run(Node start) {
-        boolean[][] visit = new boolean[n][m];
-        visit[start.y][start.x] = true;
+    static void goNextSlide(int start, int end, Map<Integer, Integer> slide) {
+        int startDish = dishes.get(start);
+        int endDish = dishes.get(end);
 
-        Queue<Node> que = new LinkedList<>();
-        que.offer(start);
-        while (!que.isEmpty()) {
-            Node p = que.poll();
-            if (map[p.y][p.x] == 1) {
-                return p.level;
+        if (slide.get(startDish) == 1) {
+            slide.remove(startDish);
+        } else slide.put(startDish, slide.get(startDish) - 1);
+
+        slide.put(endDish, slide.getOrDefault(endDish, 0) + 1);
+    }
+
+    static int findMaxDish() {
+
+        int start = 0;
+        int end =  combo - 1;
+
+        Map<Integer, Integer> slide = new HashMap<>();
+
+        initSlide(slide);
+        int result = slide.size();
+
+        do {
+            if (end == n - 1) end = -1;
+            goNextSlide(start, end + 1, slide);
+
+            int nowSize = slide.size();
+            if (!slide.containsKey(coupon)) {
+                nowSize++;
             }
 
-            for (int i = 0; i < 4; i++) {
-                int ny = p.y + dir[i][0];
-                int nx = p.x + dir[i][1];
-                if (ny < 0 || ny >= n || nx < 0 || nx >= m) continue;
-                switch (i) {
-                    case 0:
-                        upLight(que, visit, ny, nx, p.level + 1);
-                        break;
-                    case 1:
-                        leftLight(que, visit, ny, nx, p.level + 1);
-                        break;
-                    case 2:
-                        rightLight(que, visit, ny, nx, p.level + 1);
-                        break;
-                    case 3:
-                        downLight(que, visit, ny, nx, p.level + 1);
-                        break;
-                }
-            }
-        }
+            result = Math.max(result, nowSize);
 
-        return -10;
-    }
+            start++;
+            end++;
+            if (start == n) start = 0;
+        } while (end != combo - 1);
 
-    static void upLight(Queue<Node> que, boolean[][] visit, int ny, int nx, int level) {
-        for (int i = ny; i >= 0; i--) {
-            if (visit[i][nx]) continue;
-            if (map[i][nx] == -1) break;
-            visit[i][nx] = true;
-            que.offer(new Node(i, nx, level));
-        }
-    }
-
-    static void downLight(Queue<Node> que, boolean[][] visit, int ny, int nx, int level) {
-        for (int i = ny; i < n; i++) {
-            if (visit[i][nx]) continue;
-            if (map[i][nx] == -1) break;
-            visit[i][nx] = true;
-            que.offer(new Node(i, nx, level));
-        }
-    }
-
-    static void leftLight(Queue<Node> que, boolean[][] visit, int ny, int nx, int level) {
-        for (int i = nx; i >= 0; i--) {
-            if (visit[ny][i]) continue;
-            if (map[ny][i] == -1) break;
-            visit[ny][i] = true;
-            que.offer(new Node(ny, i, level));
-        }
-    }
-
-    static void rightLight(Queue<Node> que, boolean[][] visit, int ny, int nx, int level) {
-        for (int i = nx; i < m; i++) {
-            if (visit[ny][i]) continue;
-            if (map[ny][i] == -1) break;
-            visit[ny][i] = true;
-            que.offer(new Node(ny, i, level));
-        }
+        return result;
     }
 
     public static void main(String[] args) throws IOException {
@@ -98,32 +66,19 @@ public class Main {
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         StringTokenizer st = new StringTokenizer(br.readLine());
 
-        m = Integer.parseInt(st.nextToken());
         n = Integer.parseInt(st.nextToken());
-        map = new int[n][m];
+        k = Integer.parseInt(st.nextToken());
+        combo = Integer.parseInt(st.nextToken());
+        coupon = Integer.parseInt(st.nextToken());
 
-        Node start = null;
-
-        for (int y = 0; y < n; y++) {
-            String input = br.readLine();
-            for (int x = 0; x < m; x++) {
-                char ch = input.charAt(x);
-                if (ch == '.') map[y][x] = 0;
-                else if (ch == '*') map[y][x] = -1;
-                else if (ch == 'C') {
-                    if (start == null) {
-                        map[y][x] = -10;
-                        start = new Node(y, x, -1);
-                    } else {
-                        map[y][x] = 1;
-                    }
-                }
-            }
+        for (int i = 0; i < n; i++) {
+            int input = Integer.parseInt(br.readLine());
+            dishes.add(input);
         }
 
-        int result = run(start);
+        int answer = findMaxDish();
 
-        bw.write(String.valueOf(result));
+        bw.write(String.valueOf(answer));
 
         br.close();
         bw.close();
