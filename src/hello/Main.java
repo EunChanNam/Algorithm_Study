@@ -1,75 +1,110 @@
 package hello;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.*;
+
 public class Main {
-    static int[] picks;
-    static String[] minerals;
 
-    static int min = Integer.MAX_VALUE;
-    static void mine(int level, int pickIdx, int sum, int count) {
-        if (level == minerals.length) {
-            min = Math.min(sum, min);
+    static class Node {
+        String type;
+        int coin;
+        List<Integer> doorNumbers;
+
+        public Node(String type, int value, List<Integer> doorNumbers) {
+            this.type = type;
+            this.coin = value;
+            this.doorNumbers = doorNumbers;
+        }
+    }
+
+    static class Target {
+        int coin;
+        int number;
+
+        public Target(int coin, int number) {
+            this.coin = coin;
+            this.number = number;
+        }
+    }
+
+    static List<Node> nodes = new ArrayList<>();
+
+    static boolean flag = false;
+    static boolean[] visit;
+    static void dfs(int n, Target now) {
+        if (flag) return;
+
+        Node node = nodes.get(now.number);
+        if (now.number == n - 1) {
+            if (now.coin < node.coin) return;
+            flag = true;
             return;
         }
 
-        int result = processMine(level, pickIdx);
-
-        if (count > 0) {
-            mine(level + 1, pickIdx, sum + result, count - 1);
-            return;
+        int nextCoin = now.coin;
+        if (node.type.equals("T")) {
+            if (now.coin < node.coin) return;
+            nextCoin -= node.coin;
+        }
+        if (node.type.equals("L") && now.coin < node.coin) {
+            nextCoin = node.coin;
         }
 
-        if (notExistPick()) {
-            min = Math.min(sum, min);
-            return;
-        }
+        for (int doorNumber : node.doorNumbers) {
+            if (visit[doorNumber - 1]) continue;
 
-
-        for (int i = 0; i < 3; i++) {
-            if (picks[i] <= 0) continue;
-            picks[i]--;
-            mine(level, i, sum, 5);
-            picks[i]++;
+            visit[doorNumber - 1] = true;
+            dfs(n, new Target(nextCoin, doorNumber - 1));
+            visit[doorNumber - 1] = false;
         }
     }
 
-    private static boolean notExistPick() {
-        for (int pick : picks) {
-            if (pick > 0) return false;
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+        // StringTokenizer st = new StringTokenizer(br.readLine());
+
+        while (true) {
+            int n = Integer.parseInt(br.readLine());
+            if (n == 0) {
+                break;
+            }
+
+            for (int i = 0; i < n; i++) {
+                StringTokenizer st = new StringTokenizer(br.readLine());
+                String type = st.nextToken();
+                int value = Integer.parseInt(st.nextToken());
+                List<Integer> doorNumbers = new ArrayList<>();
+                while (true) {
+                    int doorNumber = Integer.parseInt(st.nextToken());
+                    if (doorNumber == 0) break;
+                    doorNumbers.add(doorNumber);
+                }
+                nodes.add(new Node(type, value, doorNumbers));
+            }
+
+            flag = false;
+            visit = new boolean[n];
+            visit[0] = true;
+            dfs(n, new Target(0, 0));
+
+            if (flag) {
+                bw.write("Yes");
+                bw.newLine();
+            } else {
+                bw.write("No");
+                bw.newLine();
+            }
+
+            nodes = new ArrayList<>();
         }
-        return true;
-    }
 
-    private static int processMine(int level, int pickIdx) {
-        if (pickIdx == 0) return 1;
-        if (pickIdx == 1) {
-            if (minerals[level].equals("diamond")) return 5;
-            else return 1;
-        }
-        if (pickIdx == 2) {
-            if (minerals[level].equals("diamond")) return 25;
-            if (minerals[level].equals("iron")) return 5;
-            else return 1;
-        }
-        throw new IllegalStateException();
-    }
+        br.close();
+        bw.close();
 
-    static int solution(int[] p, String[] m) {
-        picks = p;
-        minerals = m;
-
-        for (int i = 0; i < 3; i++) {
-            if (picks[i] <= 0) continue;
-            picks[i]--;
-            mine(0, i, 0, 5);
-            picks[i]++;
-        }
-
-        return min;
-    }
-
-    public static void main(String[] args) {
-        int[] picks = {0, 1, 1};
-        String[] minerals = {"diamond", "diamond", "diamond", "diamond", "diamond", "iron", "iron", "iron", "iron", "iron", "diamond"};
-        System.out.println(solution(picks, minerals));
     }
 }
