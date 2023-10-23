@@ -1,110 +1,77 @@
 package hello;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.*;
-
 public class Main {
 
-    static class Node {
-        String type;
-        int coin;
-        List<Integer> doorNumbers;
+    class Solution {
 
-        public Node(String type, int value, List<Integer> doorNumbers) {
-            this.type = type;
-            this.coin = value;
-            this.doorNumbers = doorNumbers;
-        }
-    }
+        int n;
+        int[] apeach;
+        int[] lion;
+        int[] resultLion;
+        int result = Integer.MIN_VALUE;
 
-    static class Target {
-        int coin;
-        int number;
-
-        public Target(int coin, int number) {
-            this.coin = coin;
-            this.number = number;
-        }
-    }
-
-    static List<Node> nodes = new ArrayList<>();
-
-    static boolean flag = false;
-    static boolean[] visit;
-    static void dfs(int n, Target now) {
-        if (flag) return;
-
-        Node node = nodes.get(now.number);
-        if (now.number == n - 1) {
-            if (now.coin < node.coin) return;
-            flag = true;
-            return;
-        }
-
-        int nextCoin = now.coin;
-        if (node.type.equals("T")) {
-            if (now.coin < node.coin) return;
-            nextCoin -= node.coin;
-        }
-        if (node.type.equals("L") && now.coin < node.coin) {
-            nextCoin = node.coin;
-        }
-
-        for (int doorNumber : node.doorNumbers) {
-            if (visit[doorNumber - 1]) continue;
-
-            visit[doorNumber - 1] = true;
-            dfs(n, new Target(nextCoin, doorNumber - 1));
-            visit[doorNumber - 1] = false;
-        }
-    }
-
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-        // StringTokenizer st = new StringTokenizer(br.readLine());
-
-        while (true) {
-            int n = Integer.parseInt(br.readLine());
-            if (n == 0) {
-                break;
+        public void copy(){
+            for (int i=0; i < lion.length; i++){
+                resultLion[i] = lion[i];
             }
-
-            for (int i = 0; i < n; i++) {
-                StringTokenizer st = new StringTokenizer(br.readLine());
-                String type = st.nextToken();
-                int value = Integer.parseInt(st.nextToken());
-                List<Integer> doorNumbers = new ArrayList<>();
-                while (true) {
-                    int doorNumber = Integer.parseInt(st.nextToken());
-                    if (doorNumber == 0) break;
-                    doorNumbers.add(doorNumber);
+        }
+        public void dfs(int level){
+            if (level == n){
+                int scoreDiff = getScoreDiff(apeach, lion);
+                if (scoreDiff >= result){
+                    result = scoreDiff;
+                    copy();
                 }
-                nodes.add(new Node(type, value, doorNumbers));
+                return;
             }
 
-            flag = false;
-            visit = new boolean[n];
-            visit[0] = true;
-            dfs(n, new Target(0, 0));
-
-            if (flag) {
-                bw.write("Yes");
-                bw.newLine();
-            } else {
-                bw.write("No");
-                bw.newLine();
+            for (int i=0; i < lion.length; i++){
+                if (lion[i] > apeach[i]) continue;
+                int plus = apeach[i] - lion[i] + 1;
+                if (plus + level > n) {
+                    plus = n - level;
+                }
+                lion[i] += plus;
+                dfs(level + plus);
+                lion[i] -= plus;
             }
-
-            nodes = new ArrayList<>();
         }
 
-        br.close();
-        bw.close();
+        public int[] solution(int m, int[] info) {
+            int[] answer = new int[info.length];
+            n = m;
+            apeach = info;
+            lion = new int[info.length];
+            resultLion = new int[info.length];
+            dfs(0);
 
+            if (result == -1 || result == 0){
+                int[] loseAnswer = {-1};
+                return loseAnswer;
+            }
+
+            for (int i=0; i < lion.length; i++){
+                answer[i] = resultLion[i];
+            }
+
+            return answer;
+        }
+
+        public int getScoreDiff(int[] a, int[] b){
+            int aSum = 0;
+            int bSum = 0;
+            for (int i=0; i < a.length; i++){
+                if (a[i] < b[i]){
+                    bSum += 10 - i;
+                } else if(a[i] > 0){
+                    aSum += 10 - i;
+                }
+            }
+            if (aSum > bSum){
+                return -1;
+            } else {
+                return bSum - aSum;
+            }
+        }
     }
 }
