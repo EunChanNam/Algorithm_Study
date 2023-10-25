@@ -6,137 +6,78 @@ public class Main {
 
     class Solution {
 
-        class Melody{
-            int times;
-            String title;
-            int order;
-            public Melody(int times, String title, int order){
-                this.times = times;
-                this.title = title;
+        class Result {
+            int cnt;
+            int price;
+            public Result(int cnt, int price){
+                this.cnt = cnt;
+                this.price = price;
             }
         }
 
-        private Map<String, String> melodyMap = new HashMap<>();
+        int[][] users;
+        int[] emoticons;
+        int n;
+        int m;
+        int[] discount = {10, 20, 30, 40};
 
-        public void init(){
-            melodyMap.put("A", "1");
-            melodyMap.put("A#", "2");
-            melodyMap.put("B", "3");
-            melodyMap.put("C", "4");
-            melodyMap.put("C#", "5");
-            melodyMap.put("D", "6");
-            melodyMap.put("D#", "7");
-            melodyMap.put("E", "8");
-            melodyMap.put("F", "9");
-            melodyMap.put("F#", "10");
-            melodyMap.put("G", "11");
-            melodyMap.put("G#", "12");
+        List<Integer> list = new ArrayList<>();
+
+        List<Result> results = new ArrayList<>();
+
+        void dfs(int level){
+            if (level == m){
+                int userCnt = 0;
+                int totalPrice = 0;
+                for (int i=0; i < n; i++){
+                    int userDiscount = users[i][0];
+                    int userPrice = users[i][1];
+
+                    int total = 0;
+                    for (int j=0; j < m; j++){
+                        int dc = list.get(j);
+                        if (list.get(j) >= userDiscount){
+                            total += emoticons[j] * (100 - dc) / 100;
+                        }
+                    }
+                    if (total >= userPrice){
+                        userCnt++;
+                    } else {
+                        totalPrice += total;
+                    }
+                }
+
+                results.add(new Result(userCnt, totalPrice));
+                return;
+            }
+
+            for (int i=0; i < 4; i++){
+                list.add(discount[i]);
+                dfs(level + 1);
+                list.remove(list.size() - 1);
+            }
         }
 
-        public String solution(String m, String[] musicinfos) {
-            String answer = "";
+        public int[] solution(int[][] u, int[] e) {
+            int[] answer = new int[2];
+            users = u;
+            emoticons = e;
+            n = users.length;
+            m = e.length;
 
-            init();
+            dfs(0);
 
-            PriorityQueue<Melody> pq = new PriorityQueue<>(
+            results.sort(
                 (a, b) -> {
-                    if (a.times == b.times){
-                        return Integer.compare(a.order, b.order);
-                    }
-                    return Integer.compare(b.times, a.times);
+                    if (a.cnt == b.cnt) return Integer.compare(b.price, a.price);
+                    return Integer.compare(b.cnt, a.cnt);
                 }
             );
+            Result result = results.get(0);
+            answer[0] = result.cnt;
+            answer[1] = result.price;
 
-            int order = 0;
-            for (String info : musicinfos){
-                String[] split = info.split(",");
-                int times = getTimes(split[0], split[1]);
-                String melody = getMelody(split[3], times);
-                String target = getMelody(m);
-
-                if (melody.contains(target)){
-                    pq.offer(new Melody(times, split[2], order));
-                }
-                order++;
-            }
-
-            if (pq.isEmpty()){
-                return "(None)";
-            }
-            return pq.poll().title;
-        }
-
-        public int getTimes(String start, String end){
-            String[] startSplit = start.split(":");
-            String[] endSplit = end.split(":");
-            int startHour = Integer.parseInt(startSplit[0]);
-            int endHour = Integer.parseInt(endSplit[0]);
-            int startMin = Integer.parseInt(startSplit[1]);
-            int endMin = Integer.parseInt(endSplit[1]);
-            int times = (endHour - startHour) * 60 + (endMin - startMin);
-
-            return times;
-        }
-
-        public String getMelody(String m){
-            return transferToString(m);
-        }
-
-        public String getMelody(String melody, int times){
-            List<String> sheet = transferToArray(melody);
-
-            StringBuilder sb = new StringBuilder();
-            int mi = 0;
-            int len = sheet.size();
-            for (int i=0; i < times; i++){
-                if (mi >= len){
-                    mi = 0;
-                }
-                sb.append(sheet.get(mi));
-                mi++;
-            }
-            return sb.toString();
-        }
-
-        public String transferToString(String melody){
-            Stack<String> stack = transferToStack(melody);
-
-            String sheet = "";
-            while(!stack.isEmpty()){
-                sheet += stack.pop();
-            }
-            return sheet;
-        }
-
-        public List<String> transferToArray(String melody){
-            List<String> list = new ArrayList<>();
-
-            Stack<String> stack = transferToStack(melody);
-
-            while(!stack.isEmpty()){
-                list.add(stack.pop());
-            }
-
-            return list;
-        }
-
-        public Stack<String> transferToStack(String melody){
-            Stack<String> stack = new Stack<>();
-            for (char ch : melody.toCharArray()){
-                stack.push(String.valueOf(ch));
-            }
-
-            Stack<String> stack2 = new Stack<>();
-            while(!stack.isEmpty()){
-                String now = stack.pop();
-                if (now.equals("#")){
-                    String target = stack.pop() + now;
-                    stack2.push(melodyMap.get(target));
-                } else {
-                    stack2.push(melodyMap.get(now));
-                }
-            }
-            return stack2;
+            return answer;
         }
     }
 }
