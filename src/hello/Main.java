@@ -1,83 +1,77 @@
 package hello;
 
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Stack;
+import java.util.StringTokenizer;
 
 public class Main {
 
-    class Solution {
+	static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
-        class Result {
-            int cnt;
-            int price;
-            public Result(int cnt, int price){
-                this.cnt = cnt;
-                this.price = price;
-            }
-        }
+	static Set<Character> set = new HashSet<>();
+	static int length;
+	static int type;
+	static List<Character> words = new ArrayList<>();
 
-        int[][] users;
-        int[] emoticons;
-        int n;
-        int m;
-        int[] discount = {10, 20, 30, 40};
+	static Stack<Character> stack = new Stack<>();
+	static void search(
+		int level,
+		int start,
+		int count1,
+		int count2
+	) throws IOException {
+		if (level == length) {
+			if (count1 < 1 || count2 < 2) return;
+			StringBuilder sb = new StringBuilder();
+			stack.forEach(sb::append);
 
-        List<Integer> list = new ArrayList<>();
+			bw.write(sb.toString());
+			bw.newLine();
+		}
 
-        List<Result> results = new ArrayList<>();
+		for (int i = start; i < type; i++) {
+			stack.push(words.get(i));
 
-        void dfs(int level){
-            if (level == m){
-                int userCnt = 0;
-                int totalPrice = 0;
-                for (int i=0; i < n; i++){
-                    int userDiscount = users[i][0];
-                    int userPrice = users[i][1];
+			if (set.contains(words.get(i))) {
+				search(level + 1, i + 1, count1 + 1, count2);
+			} else{
+				search(level + 1, i + 1, count1, count2 + 1);
+			}
 
-                    int total = 0;
-                    for (int j=0; j < m; j++){
-                        int dc = list.get(j);
-                        if (list.get(j) >= userDiscount){
-                            total += emoticons[j] * (100 - dc) / 100;
-                        }
-                    }
-                    if (total >= userPrice){
-                        userCnt++;
-                    } else {
-                        totalPrice += total;
-                    }
-                }
+			stack.pop();
+		}
+	}
 
-                results.add(new Result(userCnt, totalPrice));
-                return;
-            }
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		StringTokenizer st = new StringTokenizer(br.readLine());
 
-            for (int i=0; i < 4; i++){
-                list.add(discount[i]);
-                dfs(level + 1);
-                list.remove(list.size() - 1);
-            }
-        }
+		length = Integer.parseInt(st.nextToken());
+		type = Integer.parseInt(st.nextToken());
 
-        public int[] solution(int[][] u, int[] e) {
-            int[] answer = new int[2];
-            users = u;
-            emoticons = e;
-            n = users.length;
-            m = e.length;
+		st = new StringTokenizer(br.readLine());
+		for (int i = 0; i < type; i++) {
+			words.add(st.nextToken().charAt(0));
+		}
 
-            dfs(0);
+		words.sort(Character::compare);
+		set.add('a');
+		set.add('e');
+		set.add('i');
+		set.add('o');
+		set.add('u');
 
-            results.sort(
-                (a, b) -> {
-                    if (a.cnt == b.cnt) return Integer.compare(b.price, a.price);
-                    return Integer.compare(b.cnt, a.cnt);
-                }
-            );
-            Result result = results.get(0);
-            answer[0] = result.cnt;
-            answer[1] = result.price;
+		search(0, 0, 0, 0);
 
-            return answer;
-        }
-    }
+		br.close();
+		bw.close();
+	}
 }
