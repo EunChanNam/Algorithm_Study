@@ -5,71 +5,115 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 public class Main {
 
+	static int[][] dir = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+
+	static int getNextDir(int nowDir) {
+		if (nowDir == 0) return 3;
+		return nowDir - 1;
+	}
+
+	static int getBackDir(int nowDir) {
+		return getNextDir(getNextDir(nowDir));
+	}
+	/**
+	 * 1. 상하좌우에서 빈칸이 있는지 확인
+	 * 2. 없다면 현재 방향 반대 방향으로 후진 -> 후진 불가능하면 게임 종료
+	 * 3. 있다면 방향을 반시계 방향으로 회전
+	 * 4. 회전한 방향에 빈칸이 있다면 이동 -> 회전 방향에 빈칸이 없다면 다시 회전
+	 * 5. 청소를 진행하고 다시 1번으로 이동
+	 */
+
 	static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
-	static Set<Character> set = new HashSet<>();
-	static int length;
-	static int type;
-	static List<Character> words = new ArrayList<>();
+	static int n;
+	static int m;
+	static int[][] map;
 
-	static Stack<Character> stack = new Stack<>();
-	static void search(
-		int level,
-		int start,
-		int count1,
-		int count2
-	) throws IOException {
-		if (level == length) {
-			if (count1 < 1 || count2 < 2) return;
-			StringBuilder sb = new StringBuilder();
-			stack.forEach(sb::append);
+	static int solution(int startY, int startX, int startDir) {
+		int nowY = startY;
+		int nowX = startX;
+		int nowDir = startDir;
+		int count = 0;
 
-			bw.write(sb.toString());
-			bw.newLine();
-		}
-
-		for (int i = start; i < type; i++) {
-			stack.push(words.get(i));
-
-			if (set.contains(words.get(i))) {
-				search(level + 1, i + 1, count1 + 1, count2);
-			} else{
-				search(level + 1, i + 1, count1, count2 + 1);
+		while (true) {
+			//청소
+			if (map[nowY][nowX] == 0) {
+				count++;
+				map[nowY][nowX] = -1;
 			}
 
-			stack.pop();
+			//1
+			boolean flag = false;
+			for (int i = 0; i < 4; i++) {
+				int ny = nowY + dir[i][0];
+				int nx = nowX + dir[i][1];
+				if (ny < 0 || nx < 0 || ny >= n || nx >= m) continue;
+				if (map[ny][nx] == 0) {
+					flag = true;
+					break;
+				}
+			}
+
+			//2
+			if (!flag) {
+				int backDir = getBackDir(nowDir);
+				int ny = nowY + dir[backDir][0];
+				int nx = nowX + dir[backDir][1];
+				if (ny < 0 || nx < 0 || ny >= n || nx >= m) {
+					break;
+				}
+				if (map[ny][nx] == 1) {
+					break;
+				}
+				nowY = ny;
+				nowX = nx;
+				continue;
+			}
+
+			//3
+			nowDir = getNextDir(nowDir);
+			int ny = nowY + dir[nowDir][0];
+			int nx = nowX + dir[nowDir][1];
+			if (ny < 0 || nx < 0 || ny >= n || nx >= m) {
+				continue;
+			}
+
+			//4
+			if (map[ny][nx] == 0) {
+				nowY = ny;
+				nowX = nx;
+			}
 		}
+
+		return count;
 	}
 
 	public static void main(String[] args) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		StringTokenizer st = new StringTokenizer(br.readLine());
 
-		length = Integer.parseInt(st.nextToken());
-		type = Integer.parseInt(st.nextToken());
+		n = Integer.parseInt(st.nextToken());
+		m = Integer.parseInt(st.nextToken());
 
 		st = new StringTokenizer(br.readLine());
-		for (int i = 0; i < type; i++) {
-			words.add(st.nextToken().charAt(0));
+		int startY = Integer.parseInt(st.nextToken());
+		int startX = Integer.parseInt(st.nextToken());
+		int startDir = Integer.parseInt(st.nextToken());
+
+		map = new int[n][m];
+		for (int y = 0; y < n; y++) {
+			st = new StringTokenizer(br.readLine());
+			for (int x = 0; x < m; x++) {
+				map[y][x] = Integer.parseInt(st.nextToken());
+			}
 		}
 
-		words.sort(Character::compare);
-		set.add('a');
-		set.add('e');
-		set.add('i');
-		set.add('o');
-		set.add('u');
-
-		search(0, 0, 0, 0);
+		int answer = solution(startY, startX, startDir);
+		bw.write(String.valueOf(answer));
 
 		br.close();
 		bw.close();
