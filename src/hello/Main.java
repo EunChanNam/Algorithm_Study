@@ -7,62 +7,93 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 public class Main {
 
 	static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
+	static class Point{
+		int y;
+		int x;
+		public Point(int y, int x) {
+			this.y = y;
+			this.x = x;
+		}
+	}
+
 	static int n;
-	static int[] openIdx = new int[2];
-	static List<Integer> targets = new ArrayList<>();
+	static int m;
+	static int h;
+	static List<Point> mints = new ArrayList<>();
+	static Point start;
+
 
 	public static void main(String[] args) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		StringTokenizer st;
 
-		n = Integer.parseInt(br.readLine());
-
 		st = new StringTokenizer(br.readLine());
-		for (int i = 0; i < 2; i++) {
-			int open = Integer.parseInt(st.nextToken());
-			openIdx[i] = open;
+		n = Integer.parseInt(st.nextToken());
+		m = Integer.parseInt(st.nextToken());
+		h = Integer.parseInt(st.nextToken());
+
+		for (int y = 0; y < n; y++) {
+			st = new StringTokenizer(br.readLine());
+			for (int x = 0; x < n; x++) {
+				int value = Integer.parseInt(st.nextToken());
+				if (value == 2) mints.add(new Point(y, x));
+				if (value == 1) start = new Point(y, x);
+			}
 		}
 
-		int iterCount = Integer.parseInt(br.readLine());
-		for (int i = 0; i < iterCount; i++) {
-			targets.add(Integer.parseInt(br.readLine()));
-		}
+		visit = new boolean[mints.size()];
 
-		dfs(0, 0);
+		dfs(0);
 
-		bw.write(String.valueOf(answer));
+		System.out.println(answer);
 
 		br.close();
 		bw.close();
 	}
 
-	static int answer = Integer.MAX_VALUE;
-	private static void dfs(int level, int sum) {
-		if (level == targets.size()) {
-			answer = Math.min(answer, sum);
-			return;
+	static Stack<Point> stack = new Stack<>();
+	static boolean[] visit;
+	static int answer = 0;
+	static void dfs(int level) {
+		if (level == mints.size()) {
+			findMaxMint();
 		}
 
-		int open1 = openIdx[0];
-		int dis1 = swapAndGetDis(targets.get(level), 0);
-		dfs(level + 1, sum + dis1);
-		swapAndGetDis(open1, 0);
-
-		int open2 = openIdx[1];
-		int dis2 = swapAndGetDis(targets.get(level), 1);
-		dfs(level + 1, sum + dis2);
-		swapAndGetDis(open2, 1);
+		for (int i = 0; i < mints.size(); i++) {
+			if (visit[i]) continue;
+			visit[i] = true;
+			stack.push(mints.get(i));
+			dfs(level + 1);
+			stack.pop();
+			visit[i] = false;
+		}
 	}
 
-	private static int swapAndGetDis(int target, int idx) {
-		int dis = Math.abs(openIdx[idx] - target);
-		openIdx[idx] = target;
-		return dis;
+	static void findMaxMint() {
+		int nowHp = m;
+		Point now = new Point(start.y, start.x);
+		int cnt = 0;
+		for (Point mint : stack) {
+			int dis = Math.abs(mint.y - now.y) + Math.abs(mint.x - now.x);
+			if (dis > nowHp){
+				return;
+			}
+			cnt++;
+			nowHp -= dis;
+			nowHp += h;
+			now = new Point(mint.y, mint.x);
+
+			int homeDis = Math.abs(start.y - now.y) + Math.abs(start.x - now.x);
+			if (nowHp >= homeDis) {
+				answer = Math.max(answer, cnt);
+			}
+		}
 	}
 }
