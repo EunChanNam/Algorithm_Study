@@ -5,7 +5,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
@@ -13,42 +15,59 @@ public class Main {
 
 	static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
-	static int n;
-	static int m;
-	static int[][] map;
-	static int[][] breakMap;
-	static int[][] dir = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
-
 	static class Node{
-		int y;
-		int x;
-		int breakCnt;
+		int next;
+		int weight;
 
-		public Node(int y, int x, int breakCnt) {
-			this.y = y;
-			this.x = x;
-			this.breakCnt = breakCnt;
+		public Node(int next, int weight) {
+			this.next = next;
+			this.weight = weight;
 		}
 	}
+
+	static int landCnt;
+	static int bridgeCnt;
+	static List<List<Node>> list = new ArrayList<>();
 
 	public static void main(String[] args) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		StringTokenizer st;
 
 		st = new StringTokenizer(br.readLine());
-		m = Integer.parseInt(st.nextToken());
-		n = Integer.parseInt(st.nextToken());
-		map = new int[n][m];
-		breakMap = new int[n][m];
+		landCnt = Integer.parseInt(st.nextToken());
+		bridgeCnt = Integer.parseInt(st.nextToken());
 
-		for (int y = 0; y < n; y++) {
-			String str = br.readLine();
-			for (int x = 0; x < m; x++) {
-				map[y][x] = str.charAt(x) - '0';
-			}
+		for (int i = 0; i <= landCnt; i++) {
+			list.add(new ArrayList<>());
 		}
 
-		int answer = bfs(new Node(0, 0, 0));
+		for (int i = 0; i < bridgeCnt; i++) {
+			st = new StringTokenizer(br.readLine());
+			int a = Integer.parseInt(st.nextToken());
+			int b = Integer.parseInt(st.nextToken());
+			int weight = Integer.parseInt(st.nextToken());
+			list.get(a).add(new Node(b, weight));
+			list.get(b).add(new Node(a, weight));
+		}
+
+		st = new StringTokenizer(br.readLine());
+		int start = Integer.parseInt(st.nextToken());
+		int end = Integer.parseInt(st.nextToken());
+
+		int answer = Integer.MIN_VALUE;
+		int low = 1;
+		int high = 1000000000;
+		while (low <= high) {
+			int mid = (low + high) / 2;
+
+			boolean isAble = bfs(start, end, mid);
+			if (isAble) {
+				low = mid + 1;
+				answer = Math.max(answer, mid);
+			} else {
+				high = mid - 1;
+			}
+		}
 
 		bw.write(String.valueOf(answer));
 
@@ -56,46 +75,32 @@ public class Main {
 		bw.close();
 	}
 
-	static int bfs(Node start) {
-		boolean[][][] visit = new boolean[10001][n][m];
-		visit[0][start.y][start.x] = true;
-		visit[1][start.y][start.x] = true;
-		int min = Integer.MAX_VALUE;
+	static boolean bfs(int start, int end, int minWeight) {
+		boolean[] visit = new boolean[landCnt + 1];
+		visit[start] = true;
 
 		Queue<Node> que = new LinkedList<>();
-		que.offer(start);
+		que.offer(new Node(start, 1000000000));
 
 		while (!que.isEmpty()) {
 			Node now = que.poll();
-			if (now.y == n - 1 && now.x == m - 1) {
-				min = Math.min(min, now.breakCnt);
-			}
-
-			for (int i = 0; i < 4; i++) {
-				int ny = now.y + dir[i][0];
-				int nx = now.x + dir[i][1];
-				if (ny < 0 || nx < 0 || ny >= n || nx >= m) continue;
-				if (map[ny][nx] == 1) {
-					if (checkIsVisit(now.breakCnt + 1, visit, ny, nx)) continue;
-					visit[now.breakCnt + 1][ny][nx] = true;
-					que.offer(new Node(ny, nx, now.breakCnt + 1));
-				} else {
-					if (checkIsVisit(now.breakCnt, visit, ny, nx)) continue;
-					visit[now.breakCnt][ny][nx] = true;
-					que.offer(new Node(ny, nx, now.breakCnt));
-				}
-			}
-		}
-
-		return min;
-	}
-
-	static boolean checkIsVisit(int breakCount, boolean[][][] visit, int ny, int nx) {
-		for (int i = breakCount; i >= 0; i--) {
-			if (visit[i][ny][nx]) {
+			if (now.next == end) {
 				return true;
 			}
+
+			for (Node nextNode : list.get(now.next)) {
+				int next = nextNode.next;
+				int nextWeight = Math.min(now.weight, nextNode.weight);
+
+				if (visit[next] || nextWeight < minWeight) {
+					continue;
+				}
+
+				visit[next] = true;
+				que.offer(new Node(next, nextWeight));
+			}
 		}
+
 		return false;
 	}
 }
