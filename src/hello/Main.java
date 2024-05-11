@@ -5,65 +5,47 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 public class Main {
 
-    static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
-        String target = br.readLine();
-        int n = target.length();
+        StringTokenizer st = new StringTokenizer(br.readLine());
 
-        int aCnt = 0;
-        for (char ch : target.toCharArray()) {
-            if (ch == 'a') {
-                aCnt++;
-            }
-        }
+        int n = Integer.parseInt(st.nextToken());
+        int m = Integer.parseInt(st.nextToken());
 
-        if (aCnt == 0) {
-            bw.write("0");
-            br.close();
-            bw.close();
-            return;
+        st = new StringTokenizer(br.readLine());
+        int[] arr = new int[n];
+        for (int i = 0; i < n; i++) {
+            arr[i] = Integer.parseInt(st.nextToken());
         }
 
         int start = 0;
-        int end = aCnt - 1;
-        int answer;
+        int end = 0;
 
-        int bCount = 0;
-        for (int i = start; i <= end; i++) {
-            char ch = target.charAt(i);
-            if (ch == 'b') {
-                bCount++;
-            }
+        Map<Integer, Integer> numberMap = new HashMap<>();
+        for (int value : arr) {
+            numberMap.put(value, 0);
         }
-        answer = bCount;
+        numberMap.put(arr[start], 1);
 
-        int lastIndex = end - 1;
-        if (start == end) {
-            lastIndex = n - 1;
-        }
-
-        while (end != lastIndex) {
-            char preStart = target.charAt(start);
-            end++;
-            start++;
-            if (end == n) {
-                end = 0;
+        int answer = 0;
+        while (end != n - 1) {
+            if (numberMap.get(arr[end + 1]) < m) {
+                end++;
+                numberMap.put(arr[end], numberMap.get(arr[end]) + 1);
             }
-            if (start == n) {
-                start = 0;
+            else {
+                numberMap.put(arr[start], numberMap.get(arr[start]) - 1);
+                start++;
             }
-            char nowEnd = target.charAt(end);
-
-            if (preStart == 'b') bCount--;
-            if (nowEnd == 'b') bCount++;
-
-            answer = Math.min(answer, bCount);
+            answer = Math.max(answer, end - start + 1);
         }
 
         bw.write(String.valueOf(answer));
