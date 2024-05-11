@@ -5,102 +5,70 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.StringTokenizer;
 
 public class Main {
 
-	static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+    static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
-	static class Node{
-		int next;
-		int weight;
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-		public Node(int next, int weight) {
-			this.next = next;
-			this.weight = weight;
-		}
-	}
+        String target = br.readLine();
+        int n = target.length();
 
-	static int landCnt;
-	static int bridgeCnt;
-	static List<List<Node>> list = new ArrayList<>();
+        int aCnt = 0;
+        for (char ch : target.toCharArray()) {
+            if (ch == 'a') {
+                aCnt++;
+            }
+        }
 
-	public static void main(String[] args) throws IOException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		StringTokenizer st;
+        if (aCnt == 0) {
+            bw.write("0");
+            br.close();
+            bw.close();
+            return;
+        }
 
-		st = new StringTokenizer(br.readLine());
-		landCnt = Integer.parseInt(st.nextToken());
-		bridgeCnt = Integer.parseInt(st.nextToken());
+        int start = 0;
+        int end = aCnt - 1;
+        int answer;
 
-		for (int i = 0; i <= landCnt; i++) {
-			list.add(new ArrayList<>());
-		}
+        int bCount = 0;
+        for (int i = start; i <= end; i++) {
+            char ch = target.charAt(i);
+            if (ch == 'b') {
+                bCount++;
+            }
+        }
+        answer = bCount;
 
-		for (int i = 0; i < bridgeCnt; i++) {
-			st = new StringTokenizer(br.readLine());
-			int a = Integer.parseInt(st.nextToken());
-			int b = Integer.parseInt(st.nextToken());
-			int weight = Integer.parseInt(st.nextToken());
-			list.get(a).add(new Node(b, weight));
-			list.get(b).add(new Node(a, weight));
-		}
+        int lastIndex = end - 1;
+        if (start == end) {
+            lastIndex = n - 1;
+        }
 
-		st = new StringTokenizer(br.readLine());
-		int start = Integer.parseInt(st.nextToken());
-		int end = Integer.parseInt(st.nextToken());
+        while (end != lastIndex) {
+            char preStart = target.charAt(start);
+            end++;
+            start++;
+            if (end == n) {
+                end = 0;
+            }
+            if (start == n) {
+                start = 0;
+            }
+            char nowEnd = target.charAt(end);
 
-		int answer = Integer.MIN_VALUE;
-		int low = 1;
-		int high = 1000000000;
-		while (low <= high) {
-			int mid = (low + high) / 2;
+            if (preStart == 'b') bCount--;
+            if (nowEnd == 'b') bCount++;
 
-			boolean isAble = bfs(start, end, mid);
-			if (isAble) {
-				low = mid + 1;
-				answer = Math.max(answer, mid);
-			} else {
-				high = mid - 1;
-			}
-		}
+            answer = Math.min(answer, bCount);
+        }
 
-		bw.write(String.valueOf(answer));
+        bw.write(String.valueOf(answer));
 
-		br.close();
-		bw.close();
-	}
-
-	static boolean bfs(int start, int end, int minWeight) {
-		boolean[] visit = new boolean[landCnt + 1];
-		visit[start] = true;
-
-		Queue<Node> que = new LinkedList<>();
-		que.offer(new Node(start, 1000000000));
-
-		while (!que.isEmpty()) {
-			Node now = que.poll();
-			if (now.next == end) {
-				return true;
-			}
-
-			for (Node nextNode : list.get(now.next)) {
-				int next = nextNode.next;
-				int nextWeight = Math.min(now.weight, nextNode.weight);
-
-				if (visit[next] || nextWeight < minWeight) {
-					continue;
-				}
-
-				visit[next] = true;
-				que.offer(new Node(next, nextWeight));
-			}
-		}
-
-		return false;
-	}
+        br.close();
+        bw.close();
+    }
 }
