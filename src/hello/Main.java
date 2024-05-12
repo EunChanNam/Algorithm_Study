@@ -5,8 +5,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.StringTokenizer;
 
 public class Main {
@@ -20,37 +20,73 @@ public class Main {
         int n = Integer.parseInt(st.nextToken());
         int m = Integer.parseInt(st.nextToken());
 
-        st = new StringTokenizer(br.readLine());
-        int[] arr = new int[n];
-        for (int i = 0; i < n; i++) {
-            arr[i] = Integer.parseInt(st.nextToken());
+        if (n >= m) {
+            int answer = n - m;
+            bw.write(String.valueOf(answer));
+            br.close();
+            bw.close();
+            return;
         }
 
-        int start = 0;
-        int end = 0;
-
-        Map<Integer, Integer> numberMap = new HashMap<>();
-        for (int value : arr) {
-            numberMap.put(value, 0);
-        }
-        numberMap.put(arr[start], 1);
-
-        int answer = 0;
-        while (end != n - 1) {
-            if (numberMap.get(arr[end + 1]) < m) {
-                end++;
-                numberMap.put(arr[end], numberMap.get(arr[end]) + 1);
-            }
-            else {
-                numberMap.put(arr[start], numberMap.get(arr[start]) - 1);
-                start++;
-            }
-            answer = Math.max(answer, end - start + 1);
-        }
-
+        int answer = findByBfs(n, m);
         bw.write(String.valueOf(answer));
 
         br.close();
         bw.close();
+    }
+
+    private static class Node {
+        int point;
+        int dis;
+
+        public Node(int point, int dis) {
+            this.point = point;
+            this.dis = dis;
+        }
+    }
+
+    private static int findByBfs(int start, int end) {
+//        boolean[] visit = new boolean[1000001];
+        int[] record = new int[100001];
+        for (int i = 0; i < 100001; i++) {
+            record[i] = 1000000;
+        }
+        record[start] = 0;
+//        visit[start] = true;
+
+        Queue<Node> que = new LinkedList<>();
+        que.offer(new Node(start, 0));
+
+        while (!que.isEmpty()) {
+            Node now = que.poll();
+
+            if (now.point + 1 <= 100000 && now.dis + 1 < record[now.point + 1]) {
+                que.offer(new Node(now.point + 1, now.dis + 1));
+                record[now.point + 1] = now.dis + 1;
+            }
+            if (now.point - 1 >= 0 && now.dis + 1 < record[now.point - 1]) {
+                que.offer(new Node(now.point - 1, now.dis + 1));
+                record[now.point - 1] = now.dis + 1;
+            }
+            if (now.point * 2 <= 100000 && now.dis < record[now.point * 2]) {
+                que.offer(new Node(now.point * 2, now.dis));
+                record[now.point * 2] = now.dis;
+            }
+
+//            if (now.point * 2 <= 100000 && !visit[now.point * 2]) {
+//                que.offer(new Node(now.point * 2, now.dis));
+//                visit[now.point * 2] = true;
+//            }
+//            if (now.point - 1 >= 0 && !visit[now.point - 1]) {
+//                que.offer(new Node(now.point - 1, now.dis + 1));
+//                visit[now.point - 1] = true;
+//            }
+//            if (now.point + 1 <= 100000 && !visit[now.point + 1]) {
+//                que.offer(new Node(now.point + 1, now.dis + 1));
+//                visit[now.point + 1] = true;
+//            }
+        }
+
+        return record[end];
     }
 }
