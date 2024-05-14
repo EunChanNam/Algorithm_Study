@@ -5,11 +5,28 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 public class Main {
+
+    private static class Belt {
+        int hp;
+
+        public Belt(int hp) {
+            this.hp = hp;
+        }
+    }
+    private static class Robot {
+        int idx;
+
+        public Robot(int idx) {
+            this.idx = idx;
+        }
+    }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -20,73 +37,82 @@ public class Main {
         int n = Integer.parseInt(st.nextToken());
         int m = Integer.parseInt(st.nextToken());
 
-        if (n >= m) {
-            int answer = n - m;
-            bw.write(String.valueOf(answer));
-            br.close();
-            bw.close();
-            return;
+        List<Belt> belts = new ArrayList<>();
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n * 2; i++) {
+            belts.add(new Belt(Integer.parseInt(st.nextToken())));
         }
 
-        int answer = findByBfs(n, m);
-        bw.write(String.valueOf(answer));
+        List<Robot> robots = new ArrayList<>();
+        int beltFinCnt = 0;
+        int round = 0;
+        while (true) {
+            // 1
+            runBelt(belts);
+            runRobot(robots, n);
+            // 2
+            Set<Integer> robotIdxSet = new HashSet<>();
+            for (int i = robots.size() - 1; i >= 0; i--) {
+                Robot robot = robots.get(i);
+                int nextIdx = robot.idx + 1;
+
+                if (belts.get(nextIdx).hp > 0 && !robotIdxSet.contains(nextIdx)) {
+                    robotIdxSet.add(nextIdx);
+                    belts.get(nextIdx).hp--;
+                    robot.idx++;
+
+                    if (belts.get(nextIdx).hp == 0) {
+                        beltFinCnt++;
+                    }
+                } else {
+                    robotIdxSet.add(robot.idx);
+                }
+            }
+            if (!robots.isEmpty()) {
+                Robot last = robots.get(robots.size() - 1);
+                if (last.idx == n - 1) {
+                    robots.remove(robots.size() - 1);
+                }
+            }
+
+            // 3
+            Belt start = belts.get(0);
+            if (start.hp > 0) {
+                robots.add(0, new Robot(0));
+                start.hp--;
+
+                if (start.hp == 0) {
+                    beltFinCnt++;
+                }
+            }
+
+            // 4
+            round++;
+            if (beltFinCnt >= m) {
+                break;
+            }
+        }
+
+        bw.write(String.valueOf(round));
 
         br.close();
         bw.close();
     }
 
-    private static class Node {
-        int point;
-        int dis;
-
-        public Node(int point, int dis) {
-            this.point = point;
-            this.dis = dis;
+    private static void runRobot(List<Robot> robots, int n) {
+        if (robots.isEmpty()) {
+            return;
+        }
+        robots.forEach(robot -> robot.idx++);
+        Robot last = robots.get(robots.size() - 1);
+        if (last.idx == n - 1) {
+            robots.remove(robots.size() - 1);
         }
     }
 
-    private static int findByBfs(int start, int end) {
-//        boolean[] visit = new boolean[1000001];
-        int[] record = new int[100001];
-        for (int i = 0; i < 100001; i++) {
-            record[i] = 1000000;
-        }
-        record[start] = 0;
-//        visit[start] = true;
-
-        Queue<Node> que = new LinkedList<>();
-        que.offer(new Node(start, 0));
-
-        while (!que.isEmpty()) {
-            Node now = que.poll();
-
-            if (now.point + 1 <= 100000 && now.dis + 1 < record[now.point + 1]) {
-                que.offer(new Node(now.point + 1, now.dis + 1));
-                record[now.point + 1] = now.dis + 1;
-            }
-            if (now.point - 1 >= 0 && now.dis + 1 < record[now.point - 1]) {
-                que.offer(new Node(now.point - 1, now.dis + 1));
-                record[now.point - 1] = now.dis + 1;
-            }
-            if (now.point * 2 <= 100000 && now.dis < record[now.point * 2]) {
-                que.offer(new Node(now.point * 2, now.dis));
-                record[now.point * 2] = now.dis;
-            }
-
-//            if (now.point * 2 <= 100000 && !visit[now.point * 2]) {
-//                que.offer(new Node(now.point * 2, now.dis));
-//                visit[now.point * 2] = true;
-//            }
-//            if (now.point - 1 >= 0 && !visit[now.point - 1]) {
-//                que.offer(new Node(now.point - 1, now.dis + 1));
-//                visit[now.point - 1] = true;
-//            }
-//            if (now.point + 1 <= 100000 && !visit[now.point + 1]) {
-//                que.offer(new Node(now.point + 1, now.dis + 1));
-//                visit[now.point + 1] = true;
-//            }
-        }
-
-        return record[end];
+    private static void runBelt(List<Belt> belts) {
+        Belt last = belts.get(belts.size() - 1);
+        belts.remove(belts.size() - 1);
+        belts.add(0, last);
     }
 }
