@@ -5,48 +5,72 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.PriorityQueue;
 import java.util.StringTokenizer;
 
 public class Main {
 
+    private static class Node {
+
+        int target;
+        int cost;
+
+        public Node(int target, int cost) {
+            this.target = target;
+            this.cost = cost;
+        }
+    }
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
-        int n = Integer.parseInt(br.readLine());
-        long[] arr = new long[n];
         StringTokenizer st = new StringTokenizer(br.readLine());
-        for (int i = 0; i < n; i++) {
-            arr[i] = Long.parseLong(st.nextToken());
+
+        int n = Integer.parseInt(st.nextToken());
+        int m = Integer.parseInt(st.nextToken());
+
+        List<List<Node>> map = new ArrayList<>();
+        for (int i = 0; i <= n; i++) {
+            map.add(new ArrayList<>());
         }
 
-        int start = 0;
-        int end = n - 1;
+        for (int i = 0; i < m; i++) {
+            st = new StringTokenizer(br.readLine());
+            int a = Integer.parseInt(st.nextToken());
+            int b = Integer.parseInt(st.nextToken());
+            int cost = Integer.parseInt(st.nextToken());
 
-        long answer1 = 0;
-        long answer2 = 0;
-        long minSum = Integer.MAX_VALUE;
+            map.get(a).add(new Node(b, cost));
+            map.get(b).add(new Node(a, cost));
+        }
 
-        while (end > start) {
-            long startValue = arr[start];
-            long endValue = arr[end];
-            long sum = endValue + startValue;
+        int[] dis = new int[n + 1];
+        for (int i = 0; i <= n; i++) {
+            dis[i] = Integer.MAX_VALUE;
+        }
+        dis[1] = 0;
 
-            if (Math.abs(sum) <= minSum) {
-                answer1 = startValue;
-                answer2 = endValue;
-                minSum = Math.abs(sum);
-            }
+        PriorityQueue<Node> que = new PriorityQueue<>(Comparator.comparingInt(a -> a.cost));
+        que.offer(new Node(1, 0));
 
-            if (sum > 0) {
-                end--;
-            } else {
-                start++;
+        while (!que.isEmpty()) {
+            Node now = que.poll();
+
+            List<Node> nowMap = map.get(now.target);
+            for (Node node : nowMap) {
+                int nextCost = now.cost + node.cost;
+                if (nextCost < dis[node.target]) {
+                    dis[node.target] = nextCost;
+                    que.offer(new Node(node.target, nextCost));
+                }
             }
         }
 
-        bw.write(answer1 + " " + answer2);
+        bw.write(String.valueOf(dis[n]));
 
         br.close();
         bw.close();
