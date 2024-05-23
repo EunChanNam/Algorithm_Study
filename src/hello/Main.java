@@ -1,87 +1,51 @@
-package hello;
+import java.util.*;
+class Solution {
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+    private static class Node {
+        int price;
+        int idx;
+        public Node(int price, int idx) {
+            this.price = price;
+            this.idx = idx;
+        }
+    }
 
-public class Main {
+    public int[] solution(int[] prices) {
+        int n = prices.length;
+        int[] answer = new int[n];
 
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+        PriorityQueue<Node> que = new PriorityQueue<>((a, b) -> Integer.compare(b.price, a.price));
 
-        Map<String, Integer> map = new HashMap<>();
-        Set<String> set = new HashSet<>();
+        for (int i=0; i < n; i++) {
+            int price = prices[i];
 
-        int n = Integer.parseInt(br.readLine());
-        List<String> list = new ArrayList<>();
+            while (!que.isEmpty()) {
+                Node now = que.peek();
 
-        for (int i = 0; i < n; i++) {
-            String str = br.readLine();
-            list.add(str);
+                if (price < now.price) {
+                    answer[now.idx] = i - now.idx;
+                    que.poll();
+
+                    if (!que.isEmpty()) {
+                        Node next = que.peek();
+                        if (price < next.price) {
+                            continue;
+                        }
+                    }
+                }
+
+                break;
+            }
+
+            que.offer(new Node(price, i));
         }
 
-        list.forEach(str -> {
-            if (!set.contains(str)) {
-                StringBuilder sb = new StringBuilder();
-                for (char ch : str.toCharArray()) {
-                    sb.append(ch);
-                    String now = sb.toString();
-                    map.put(now, map.getOrDefault(now, 0) + 1);
-                }
-                set.add(str);
-            }
+        // que.forEach(node -> System.out.println(node.price));
+
+        que.forEach(node -> {
+            answer[node.idx] = n - node.idx - 1;
         });
 
-        List<String> keys = new ArrayList<>(map.keySet())
-            .stream()
-            .filter(key -> map.get(key) >= 2)
-            .collect(Collectors.toList());
-        keys.sort((a, b) -> Integer.compare(b.length(), a.length()));
-        int maxLength = keys.get(0).length();
-
-        List<String> maxKeys = new ArrayList<>();
-        for (String key : keys) {
-            if (key.length() != maxLength) {
-                break;
-            }
-            maxKeys.add(key);
-        }
-
-        int cnt = 0;
-        String maxKey = "";
-        for (String str : list) {
-            for (String key : maxKeys) {
-                if (str.startsWith(key)) {
-                    maxKey = key;
-                    break;
-                }
-            }
-            if (!maxKey.isEmpty()) {
-                break;
-            }
-        }
-        for (String str : list) {
-            if (cnt == 2) {
-                break;
-            }
-
-            if (str.startsWith(maxKey)) {
-                System.out.println(str);
-                cnt++;
-            }
-        }
-
-        br.close();
-        bw.close();
+        return answer;
     }
 }
