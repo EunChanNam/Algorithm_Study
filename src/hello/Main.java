@@ -1,51 +1,36 @@
 import java.util.*;
 class Solution {
+    public long putMarbles(int[] weights, int k) {
+        int n = weights.length;
 
-    private static class Node {
-        int price;
-        int idx;
-        public Node(int price, int idx) {
-            this.price = price;
-            this.idx = idx;
-        }
-    }
 
-    public int[] solution(int[] prices) {
-        int n = prices.length;
-        int[] answer = new int[n];
+        long leftStart = weights[0];
+        long rightEnd = weights[n - 1];
 
-        PriorityQueue<Node> que = new PriorityQueue<>((a, b) -> Integer.compare(b.price, a.price));
+        List<Long> sumList = new ArrayList<>();
+        for (int i=0; i < n - 1; i++) {
+            long nowWeight = weights[i];
+            long nextWeight = weights[i + 1];
+            long sum = nowWeight + nextWeight;
 
-        for (int i=0; i < n; i++) {
-            int price = prices[i];
-
-            while (!que.isEmpty()) {
-                Node now = que.peek();
-
-                if (price < now.price) {
-                    answer[now.idx] = i - now.idx;
-                    que.poll();
-
-                    if (!que.isEmpty()) {
-                        Node next = que.peek();
-                        if (price < next.price) {
-                            continue;
-                        }
-                    }
-                }
-
-                break;
-            }
-
-            que.offer(new Node(price, i));
+            sumList.add(sum);
         }
 
-        // que.forEach(node -> System.out.println(node.price));
+        List<Long> ascList = new ArrayList<>(sumList);
+        List<Long> descList = new ArrayList<>(sumList);
+        ascList.sort((a, b) -> Long.compare(a, b));
+        descList.sort((a, b) -> Long.compare(b, a));
 
-        que.forEach(node -> {
-            answer[node.idx] = n - node.idx - 1;
-        });
+        long min = 0;
+        long max = 0;
 
-        return answer;
+        int ascIdx = 0;
+        int descIdx = 0;
+        for (int i=0; i < k - 1; i++) {
+            min += ascList.get(ascIdx++);
+            max += descList.get(descIdx++);
+        }
+
+        return max - min;
     }
 }
