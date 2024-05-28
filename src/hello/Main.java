@@ -1,33 +1,33 @@
-import java.util.*;
 class Solution {
-    public String orderlyQueue(String s, int k) {
-        if (k == 1) {
-            List<String> resultList = findByBfs(s, k);
-            resultList.sort((a, b) -> a.compareTo(b));
-            return resultList.get(0);
-        } else {
-            char[] charArray = s.toCharArray();
-            Arrays.sort(charArray);
-            return String.valueOf(charArray);
-        }
+    public int solution(String word) {
+        int answer = 0;
+
+        dfs(0, "", word);
+        answer = cnt;
+
+        return answer;
     }
 
-    private List<String> findByBfs(String s, int k) {
-        int n = s.length();
+    private static char[] arr = {'A', 'E', 'I', 'O', 'U'};
 
-        List<String> result = new ArrayList<>();
-        String now = s;
-        for (int i=0; i < n; i++) {
-            StringBuilder sb = new StringBuilder(now);
-
-            char first = now.charAt(0);
-            sb.deleteCharAt(0);
-            sb.append(first);
-
-            now = sb.toString();
-            result.add(now);
+    private boolean stop = false;
+    private int cnt = -1;
+    private void dfs(int level, String now, String target) {
+        if (stop) return;
+        cnt++;
+        if (now.equals(target)) {
+            stop = true;
+            return;
+        }
+        if (level >= 5) {
+            return;
         }
 
-        return result;
+        for (char ch : arr) {
+            StringBuilder sb = new StringBuilder(now);
+            sb.append(ch);
+            String next = sb.toString();
+            dfs(level + 1, next, target);
+        }
     }
 }
