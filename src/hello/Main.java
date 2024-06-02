@@ -1,72 +1,68 @@
 import java.util.*;
 class Solution {
 
-    private class Node {
-        int y;
-        int x;
+    private class Word {
+        String value;
+        boolean visit;
         int level;
-        public Node(int y, int x, int level) {
-            this.y = y;
-            this.x = x;
+        public Word(String value, int level) {
+            this.value = value;
+            this.visit = false;
             this.level = level;
         }
     }
 
-    private int[][] dir = {{0, -1}, {0, 1}, {1, 0}, {-1, 0}};
-
-    public int solution(int[][] rectangle, int characterX, int characterY, int itemX, int itemY) {
+    public int solution(String begin, String target, String[] wordArray) {
         int answer = 0;
 
-        int[][] map = new int[110][110];
-        int[][] lines = new int[110][110];
+        List<String> words = new ArrayList<>();
+        for (String word : wordArray) {
+            words.add(word);
+        }
+        words.add(begin);
 
-        for (int[] point : rectangle) {
-            int x1 = point[0] * 2;
-            int y1 = point[1] * 2;
-            int x2 = point[2] * 2;
-            int y2 = point[3] * 2;
+        Map<String, List<Word>> map = new HashMap<>();
 
-            for (int y=y1 + 1; y < y2; y++) {
-                for (int x=x1 + 1; x < x2; x++) {
-                    map[y][x]++;
+        for (int i=0; i < words.size(); i++) {
+            for (int j=0; j < words.size() - 1; j++) {
+                if (i == j) continue;
+                String now = words.get(i);
+                String other = words.get(j);
+
+                int sameCnt = 0;
+                for (int k=0; k < now.length(); k++) {
+                    char nowCh = now.charAt(k);
+                    char otherCh = other.charAt(k);
+                    if (nowCh == otherCh) sameCnt++;
                 }
-            }
-            for (int y = y1; y <= y2; y++) {
-                lines[y][x1] = 1;
-                lines[y][x2] = 1;
-            }
-            for (int x = x1; x <= x2; x++) {
-                lines[y1][x] = 1;
-                lines[y2][x] = 1;
+                if (sameCnt == now.length() - 1) {
+                    if (!map.containsKey(now)) {
+                        map.put(now, new ArrayList<>());
+                    }
+                    map.get(now).add(new Word(other, 0));
+                }
             }
         }
 
-        Node start = new Node(characterY * 2, characterX * 2, 0);
-        boolean[][] visit = new boolean[110][110];
-        visit[start.y][start.x] = true;
-
-        Queue<Node> que = new ArrayDeque<>();
+        Word start = new Word(begin, 0);
+        Queue<Word> que = new ArrayDeque<>();
         que.offer(start);
 
-        while(!que.isEmpty()) {
-            Node now = que.poll();
-            if (now.y == itemY * 2 && now.x == itemX * 2) {
-                answer = now.level / 2;
+        while (!que.isEmpty()) {
+            Word now = que.poll();
+            if (now.value.equals(target)) {
+                answer = now.level;
                 break;
             }
 
-            for (int i=0; i < 4; i++) {
-                int ny = now.y + dir[i][0];
-                int nx = now.x + dir[i][1];
-
-                if (visit[ny][nx]) continue;
-                if (lines[ny][nx] != 1) continue;
-                if (map[ny][nx] >= 1) continue;
-                visit[ny][nx] = true;
-                que.offer(new Node(ny, nx, now.level + 1));
+            if (!map.containsKey(now.value)) continue;
+            List<Word> nextList = map.get(now.value);
+            for (Word next : nextList) {
+                if (next.visit) continue;
+                next.visit = true;
+                que.offer(new Word(next.value, now.level + 1));
             }
         }
-
 
         return answer;
     }
