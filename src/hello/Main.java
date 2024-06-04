@@ -1,69 +1,59 @@
 import java.util.*;
 class Solution {
 
-    private class Word {
-        String value;
-        boolean visit;
-        int level;
-        public Word(String value, int level) {
-            this.value = value;
-            this.visit = false;
-            this.level = level;
+    private class Cost {
+        int a;
+        int b;
+        int cost;
+        public Cost(int a, int b, int cost) {
+            this.a = a;
+            this.b = b;
+            this.cost = cost;
         }
     }
 
-    public int solution(String begin, String target, String[] wordArray) {
+    private int[] uf;
+
+    public int solution(int n, int[][] arrs) {
         int answer = 0;
 
-        List<String> words = new ArrayList<>();
-        for (String word : wordArray) {
-            words.add(word);
+        uf = new int[n];
+        for (int i=0; i < n; i++) {
+            uf[i] = i;
         }
-        words.add(begin);
 
-        Map<String, List<Word>> map = new HashMap<>();
+        List<Cost> costs = new ArrayList<>();
+        for (int[] arr : arrs) {
+            costs.add(new Cost(arr[0], arr[1], arr[2]));
+        }
 
-        for (int i=0; i < words.size(); i++) {
-            for (int j=0; j < words.size() - 1; j++) {
-                if (i == j) continue;
-                String now = words.get(i);
-                String other = words.get(j);
+        costs.sort(Comparator.comparingInt(a -> a.cost));
 
-                int sameCnt = 0;
-                for (int k=0; k < now.length(); k++) {
-                    char nowCh = now.charAt(k);
-                    char otherCh = other.charAt(k);
-                    if (nowCh == otherCh) sameCnt++;
-                }
-                if (sameCnt == now.length() - 1) {
-                    if (!map.containsKey(now)) {
-                        map.put(now, new ArrayList<>());
-                    }
-                    map.get(now).add(new Word(other, 0));
-                }
+        int totalCost = 0;
+        for (Cost cost : costs) {
+            int a = cost.a;
+            int b = cost.b;
+            if (find(a) != find(b)){
+                union(a, b);
+                totalCost += cost.cost;
             }
         }
 
-        Word start = new Word(begin, 0);
-        Queue<Word> que = new ArrayDeque<>();
-        que.offer(start);
-
-        while (!que.isEmpty()) {
-            Word now = que.poll();
-            if (now.value.equals(target)) {
-                answer = now.level;
-                break;
-            }
-
-            if (!map.containsKey(now.value)) continue;
-            List<Word> nextList = map.get(now.value);
-            for (Word next : nextList) {
-                if (next.visit) continue;
-                next.visit = true;
-                que.offer(new Word(next.value, now.level + 1));
-            }
-        }
+        answer = totalCost;
 
         return answer;
+    }
+
+    private int find(int a) {
+        if (uf[a] == a) return uf[a];
+        return uf[a] = find(uf[a]);
+    }
+
+    private void union(int a, int b) {
+        int fa = find(a);
+        int fb = find(b);
+        if (fa != fb) {
+            uf[fa] = fb;
+        }
     }
 }
