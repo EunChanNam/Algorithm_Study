@@ -1,59 +1,44 @@
 import java.util.*;
 class Solution {
 
-    private class Cost {
-        int a;
-        int b;
-        int cost;
-        public Cost(int a, int b, int cost) {
-            this.a = a;
-            this.b = b;
-            this.cost = cost;
+    private static class Route {
+        int start;
+        int end;
+        public Route(int start, int end) {
+            this.start = start;
+            this.end = end;
         }
     }
 
-    private int[] uf;
+    List<Route> routes;
 
-    public int solution(int n, int[][] arrs) {
+    public int solution(int[][] arrs) {
         int answer = 0;
 
-        uf = new int[n];
-        for (int i=0; i < n; i++) {
-            uf[i] = i;
-        }
-
-        List<Cost> costs = new ArrayList<>();
+        routes = new ArrayList<>();
         for (int[] arr : arrs) {
-            costs.add(new Cost(arr[0], arr[1], arr[2]));
+            routes.add(new Route(arr[0], arr[1]));
         }
 
-        costs.sort(Comparator.comparingInt(a -> a.cost));
+        routes.sort((a, b) -> Integer.compare(a.end, b.end));
 
-        int totalCost = 0;
-        for (Cost cost : costs) {
-            int a = cost.a;
-            int b = cost.b;
-            if (find(a) != find(b)){
-                union(a, b);
-                totalCost += cost.cost;
-            }
+        for (int i=0; i < routes.size();) {
+            Route now = routes.get(i);
+
+            i = updateCheckPoint(i, now.end);
+            answer++;
         }
-
-        answer = totalCost;
 
         return answer;
     }
 
-    private int find(int a) {
-        if (uf[a] == a) return uf[a];
-        return uf[a] = find(uf[a]);
-    }
-
-    private void union(int a, int b) {
-        int fa = find(a);
-        int fb = find(b);
-        if (fa != fb) {
-            uf[fa] = fb;
+    private int updateCheckPoint(int checkPoint, int end) {
+        for (int i=checkPoint; i < routes.size(); i++) {
+            Route now = routes.get(i);
+            if (now.start > end || now.end < end) {
+                return i;
+            }
         }
+        return routes.size();
     }
 }
