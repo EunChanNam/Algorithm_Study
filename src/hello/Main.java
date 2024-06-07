@@ -1,44 +1,32 @@
 import java.util.*;
 class Solution {
-
-    private static class Route {
-        int start;
-        int end;
-        public Route(int start, int end) {
-            this.start = start;
-            this.end = end;
-        }
-    }
-
-    List<Route> routes;
-
-    public int solution(int[][] arrs) {
+    public int solution(int[][] triangles) {
         int answer = 0;
 
-        routes = new ArrayList<>();
-        for (int[] arr : arrs) {
-            routes.add(new Route(arr[0], arr[1]));
+        List<Integer[]> dp = new ArrayList<>();
+        for (int[] triangle : triangles) {
+            Integer[] arr = new Integer[triangle.length];
+            dp.add(arr);
         }
 
-        routes.sort((a, b) -> Integer.compare(a.end, b.end));
+        dp.get(0)[0] = triangles[0][0];
 
-        for (int i=0; i < routes.size();) {
-            Route now = routes.get(i);
-
-            i = updateCheckPoint(i, now.end);
-            answer++;
+        for (int y=1; y < triangles.length; y++) {
+            Integer[] preDp = dp.get(y - 1);
+            Integer[] nowDp = dp.get(y);
+            for (int x=0; x < nowDp.length; x++) {
+                if (x == nowDp.length - 1) {
+                    nowDp[x] = triangles[y][x] + preDp[x - 1];
+                } else if (x == 0) {
+                    nowDp[x] = triangles[y][x] + preDp[x];
+                } else {
+                    int max = Math.max(preDp[x], preDp[x - 1]);
+                    nowDp[x] = triangles[y][x] + max;
+                }
+                answer = Math.max(answer, nowDp[x]);
+            }
         }
 
         return answer;
-    }
-
-    private int updateCheckPoint(int checkPoint, int end) {
-        for (int i=checkPoint; i < routes.size(); i++) {
-            Route now = routes.get(i);
-            if (now.start > end || now.end < end) {
-                return i;
-            }
-        }
-        return routes.size();
     }
 }
