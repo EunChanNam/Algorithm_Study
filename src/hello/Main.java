@@ -1,31 +1,27 @@
+import java.util.*;
 class Solution {
+    public String removeKdigits(String num, int k) {
+        if (num.length() == k) return "0";
 
-    public String longestPalindrome(String s) {
-
-        for (int i=0; i < s.length(); i++) {
-            getMaxLengthStr(s, i, i + 1);
-            getMaxLengthStr(s, i, i + 2);
-        }
-
-        return s.substring(maxLeft, maxRight + 1);
-    }
-
-    private int maxLeft = 0;
-    private int maxRight = 0;
-    private int maxLength = 0;
-
-    private void getMaxLengthStr(String s, int left, int right) {
-        while (left >= 0 && right < s.length() && s.charAt(left) == s.charAt(right)) {
-
-            int length = right - left;
-            if (length > maxLength) {
-                maxLeft = left;
-                maxRight = right;
-                maxLength = length;
+        Stack<Character> stack = new Stack<>();
+        for (char ch : num.toCharArray()) {
+            while (!stack.isEmpty() && k > 0 && stack.peek() > ch) {
+                stack.pop();
+                k--;
             }
-
-            left--;
-            right++;
+            stack.push(ch);
         }
+
+        StringBuilder sb = new StringBuilder();
+        for (char ch : stack) {
+            sb.append(ch);
+        }
+        sb.setLength(sb.length() - k);
+
+        while (!sb.isEmpty() && sb.charAt(0) == '0') {
+            sb.deleteCharAt(0);
+        }
+
+        return sb.toString().isEmpty() ? "0" : sb.toString();
     }
 }
