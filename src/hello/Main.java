@@ -1,35 +1,23 @@
-import java.util.*;
 class Solution {
-    public long continuousSubarrays(int[] nums) {
-        long answer = 0L;
-        answer += nums.length;
 
-        Deque<Integer> deque = new ArrayDeque<>();
-        int max = Integer.MIN_VALUE;
-        int min = Integer.MAX_VALUE;
+    public int minimumCoins(int[] prices) {
+        int n = prices.length;
+        int dp1[] = new int[n];
+        int dp2[] = new int[n];
 
-        for (int num : nums) {
-            Deque<Integer> temp = new ArrayDeque<>();
-            if (max != Integer.MIN_VALUE && (Math.abs(max - num) > 2 || Math.abs(min - num) > 2)) {
-                max = Integer.MIN_VALUE;
-                min = Integer.MAX_VALUE;
-                while (!deque.isEmpty() && Math.abs(num - deque.getLast()) <= 2) {
-                    int top = deque.removeLast();
-                    max = Math.max(max, top);
-                    min = Math.min(min, top);
-                    temp.addFirst(top);
-                }
+        dp1[0] = prices[0];
+        dp2[0] = prices[0];
 
-                deque = temp;
+        for (int i=1; i < n; i++) {
+            dp1[i] = Math.min(dp1[i - 1], dp2[i - 1]) + prices[i];
+
+            int min = Integer.MAX_VALUE;
+            for (int j = i / 2; j <= i; j++) {
+                min = Math.min(min, dp1[j]);
             }
-
-            deque.addLast(num);
-            max = Math.max(max, num);
-            min = Math.min(min, num);
-
-            answer += deque.size() - 1;
+            dp2[i] = min;
         }
 
-        return answer;
+        return Math.min(dp1[n - 1], dp2[n - 1]);
     }
 }
