@@ -1,31 +1,35 @@
 import java.util.*;
 class Solution {
-    public long minimalKSum(int[] nums, int k) {
+    public long continuousSubarrays(int[] nums) {
+        long answer = 0L;
+        answer += nums.length;
 
-        Arrays.sort(nums);
-
-        int now = 1;
-        long sum = 0L;
+        Deque<Integer> deque = new ArrayDeque<>();
+        int max = Integer.MIN_VALUE;
+        int min = Integer.MAX_VALUE;
 
         for (int num : nums) {
-            boolean flag = false;
-            while (num > now) {
-                if (k <= 0){
-                    flag = true;
-                    break;
+            Deque<Integer> temp = new ArrayDeque<>();
+            if (max != Integer.MIN_VALUE && (Math.abs(max - num) > 2 || Math.abs(min - num) > 2)) {
+                max = Integer.MIN_VALUE;
+                min = Integer.MAX_VALUE;
+                while (!deque.isEmpty() && Math.abs(num - deque.getLast()) <= 2) {
+                    int top = deque.removeLast();
+                    max = Math.max(max, top);
+                    min = Math.min(min, top);
+                    temp.addFirst(top);
                 }
-                sum += now++;
-                k--;
+
+                deque = temp;
             }
-            if (flag) break;
-            now = num + 1;
+
+            deque.addLast(num);
+            max = Math.max(max, num);
+            min = Math.min(min, num);
+
+            answer += deque.size() - 1;
         }
 
-        while (k > 0) {
-            sum += now++;
-            k--;
-        }
-
-        return sum;
+        return answer;
     }
 }
