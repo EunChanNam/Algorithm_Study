@@ -1,44 +1,66 @@
-import java.util.*;
-class Solution {
-    public int monotoneIncreasingDigits(int n) {
-        String s = String.valueOf(n);
-        Stack<Character> stack = new Stack<>();
+package hello;
 
-        boolean isDecre = false;
-        for (char ch : s.toCharArray()) {
-            if (stack.isEmpty()) {
-                stack.push(ch);
-                continue;
-            }
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
-            if (isDecre) {
-                stack.push('9');
-                continue;
-            }
+public class Main {
 
-            int decreaseCnt = 0;
-            Stack<Character> temp = new Stack<>();
-            while (!stack.isEmpty() && stack.peek() > ch) {
-                char top = stack.pop();
-                ch = --top;
-                temp.push(ch);
-                decreaseCnt++;
-                isDecre = true;
-            }
-            if (!temp.isEmpty()) {
-                stack.push(temp.pop());
-            }
-            for (int i=0; i < decreaseCnt; i++) {
-                stack.push('9');
-            }
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 
-            if (decreaseCnt == 0) {
-                stack.push(ch);
+        StringTokenizer st = new StringTokenizer(br.readLine());
+
+        int n = Integer.parseInt(st.nextToken());
+        st = new StringTokenizer(br.readLine());
+
+        int[] arr = new int[n];
+        for (int i = 0; i < n; i++) {
+            arr[i] = Integer.parseInt(st.nextToken());
+        }
+
+        Map<Integer, Integer> map = new HashMap<>();
+        int answer = 0;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = i; j < n; j++) {
+                if (i == j) {
+                    continue;
+                }
+                int sum = arr[i] + arr[j];
+                map.put(sum, map.getOrDefault(sum, 0) + 1);
             }
         }
 
-        StringBuilder sb = new StringBuilder();
-        stack.forEach(ch -> sb.append(ch));
-        return Integer.parseInt(sb.toString());
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i == j) {
+                    continue;
+                }
+                int sum = arr[i] + arr[j];
+                map.put(sum, map.getOrDefault(sum, 0) - 1);
+            }
+            if (map.containsKey(arr[i]) && map.get(arr[i]) > 0) {
+                answer++;
+            }
+            for (int j = 0; j < n; j++) {
+                if (i == j) {
+                    continue;
+                }
+                int sum = arr[i] + arr[j];
+                map.put(sum, map.getOrDefault(sum, 0) + 1);
+            }
+        }
+
+        bw.write(String.valueOf(answer));
+
+        br.close();
+        bw.close();
     }
 }
