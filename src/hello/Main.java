@@ -5,8 +5,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 public class Main {
@@ -24,37 +23,34 @@ public class Main {
         for (int i = 0; i < n; i++) {
             arr[i] = Integer.parseInt(st.nextToken());
         }
+        Arrays.sort(arr);
 
-        Map<Integer, Integer> map = new HashMap<>();
         int answer = 0;
-
         for (int i = 0; i < n; i++) {
-            for (int j = i; j < n; j++) {
-                if (i == j) {
-                    continue;
-                }
-                int sum = arr[i] + arr[j];
-                map.put(sum, map.getOrDefault(sum, 0) + 1);
-            }
-        }
+            int now = arr[i];
+            int left = 0;
+            int right = n - 1;
 
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (i == j) {
+            while (left != right) {
+                if (left == i) {
+                    left++;
                     continue;
                 }
-                int sum = arr[i] + arr[j];
-                map.put(sum, map.getOrDefault(sum, 0) - 1);
-            }
-            if (map.containsKey(arr[i]) && map.get(arr[i]) > 0) {
-                answer++;
-            }
-            for (int j = 0; j < n; j++) {
-                if (i == j) {
+                if (right == i) {
+                    right--;
                     continue;
                 }
-                int sum = arr[i] + arr[j];
-                map.put(sum, map.getOrDefault(sum, 0) + 1);
+
+                int sum = arr[left] + arr[right];
+                if (sum == now) {
+                    answer++;
+                    break;
+                }
+                if (sum < now) {
+                    left++;
+                } else {
+                    right--;
+                }
             }
         }
 
