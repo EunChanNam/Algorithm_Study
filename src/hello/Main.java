@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.Arrays;
 import java.util.StringTokenizer;
 
 public class Main {
@@ -17,41 +16,39 @@ public class Main {
         StringTokenizer st = new StringTokenizer(br.readLine());
 
         int n = Integer.parseInt(st.nextToken());
-        st = new StringTokenizer(br.readLine());
+        int s = Integer.parseInt(st.nextToken());
 
         int[] arr = new int[n];
+        st = new StringTokenizer(br.readLine());
         for (int i = 0; i < n; i++) {
             arr[i] = Integer.parseInt(st.nextToken());
         }
-        Arrays.sort(arr);
 
-        int answer = 0;
-        for (int i = 0; i < n; i++) {
-            int now = arr[i];
-            int left = 0;
-            int right = n - 1;
+        int left = 0;
+        int right = 0;
+        int sum = arr[0];
 
-            while (left != right) {
-                if (left == i) {
-                    left++;
-                    continue;
-                }
-                if (right == i) {
-                    right--;
-                    continue;
-                }
+        int answer = Integer.MAX_VALUE;
 
-                int sum = arr[left] + arr[right];
-                if (sum == now) {
-                    answer++;
-                    break;
+        while (right < n && left < n) {
+            if (sum < s) {
+                right++;
+                if (right < n) {
+                    sum += arr[right];
                 }
-                if (sum < now) {
-                    left++;
-                } else {
-                    right--;
+            } else {
+                answer = Math.min(answer, right - left + 1);
+                sum -= arr[left];
+                left++;
+                if (left > right && right + 1 < n) {
+                    right++;
+                    sum += arr[right];
                 }
             }
+        }
+
+        if (answer == Integer.MAX_VALUE) {
+            answer = 0;
         }
 
         bw.write(String.valueOf(answer));
