@@ -1,27 +1,28 @@
 import java.util.*;
 class Solution {
-    public String solution(int[] numbers) {
-        String answer = "";
+    public int[] solution(int[] numbers) {
+
+        Stack<Integer> stack = new Stack<>();
         int n = numbers.length;
 
-        List<String> strs = new ArrayList<>();
+        Stack<Integer> result = new Stack<>();
+        for (int i = n - 1; i >= 0; i--) {
+            int now = numbers[i];
+            while (!stack.isEmpty() && stack.peek() <= now) {
+                stack.pop();
+            }
+            if (!stack.isEmpty() && stack.peek() > now) {
+                result.push(stack.peek());
+            } else {
+                result.push(-1);
+            }
 
-        for (int i=0; i < n; i++) {
-            strs.add(String.valueOf(numbers[i]));
+            stack.push(now);
         }
 
-        strs.sort((a, b) -> {
-            String order1 = a + b;
-            String order2 = b + a;
-            return order2.compareTo(order1);
-        });
-
-        StringBuilder sb = new StringBuilder();
-        strs.forEach(str -> sb.append(str));
-
-        answer = sb.toString();
-        if (!answer.isEmpty() && answer.charAt(0) == '0') {
-            return "0";
+        int[] answer = new int[n];
+        for (int i=0; i < n; i++) {
+            answer[i] = result.pop();
         }
 
         return answer;
