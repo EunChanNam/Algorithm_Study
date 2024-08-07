@@ -1,68 +1,94 @@
-import java.util.*;
-class Solution {
-    public int solution(String numbers) {
-        int answer = 0;
-        n = numbers.length();
+package hello;
 
-        for (char ch : numbers.toCharArray()) {
-            list.add((int) ch - '0');
-        }
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.StringTokenizer;
 
-        visit = new boolean[n];
-        dfs(0);
-        answer = cnt;
+public class Main {
 
-        return answer;
-    }
+    private static class Node {
+        int level;
+        List<Integer> children;
+        int stack = 0;
+        int childCnt = 0;
+        int depth = 0;
+        Node parent;
 
-    private static int n;
-    private static Set<Integer> set = new HashSet<>();
-    private static List<Integer> list = new ArrayList<>();
-    private static int cnt = 0;
-    private static boolean[] visit;
-    private static StringBuilder sb = new StringBuilder();
-
-    private void dfs(int level) {
-        if (level == n + 1) return;
-
-        String str = sb.toString();
-        if (!str.isEmpty()) {
-            int num = Integer.parseInt(str);
-
-            if (isPrime(num) && !set.contains(num)) {
-                set.add(num);
-                cnt++;
+        public Node(int level, int... child) {
+            this.level = level;
+            children = new ArrayList<>();
+            for (int c : child) {
+                children.add(c);
             }
-        }
-
-        for (int i=0; i < n; i++) {
-            if (visit[i]) continue;
-            int next = list.get(i);
-
-            visit[i] = true;
-            sb.append(next);
-            dfs(level + 1);
-            sb.deleteCharAt(sb.length() - 1);
-            visit[i] = false;
         }
     }
 
-    public static boolean isPrime(int number) {
-        if (number <= 1) {
-            return false;
-        }
-        if (number == 2) {
-            return true;
-        }
-        if (number % 2 == 0) {
-            return false;
-        }
-        for (int i = 3; i <= Math.sqrt(number); i += 2) {
-            if (number % i == 0) {
-                return false;
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+        StringTokenizer st = new StringTokenizer(br.readLine());
+
+        int n = Integer.parseInt(st.nextToken());
+        st = new StringTokenizer(br.readLine());
+
+        List<Node> nodes = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            int num = Integer.parseInt(st.nextToken());
+            if (num == -1) {
+                nodes.add(new Node(-1));
+                continue;
+            }
+            Node node = new Node(0);
+            node.level = nodes.get(num).level + 1;
+            nodes.add(node);
+            nodes.get(num).children.add(i);
+            node.parent = nodes.get(num);
+
+            Node parent = nodes.get(num);
+
+            while (parent != null) {
+                parent.childCnt++;
+                parent.depth = node.level;
+                parent = parent.parent;
             }
         }
 
-        return true;
+        PriorityQueue<Node> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a.level));
+
+        nodes.forEach(pq::offer);
+
+        int max = 0;
+        while (!pq.isEmpty()) {
+            Node node = pq.poll();
+            int stack = 1;
+            node.children.sort((a, b) -> {
+                Node aNode = nodes.get(a);
+                Node bNode = nodes.get(b);
+                if (aNode.depth == bNode.depth) {
+                    return Integer.compare(bNode.childCnt, aNode.childCnt);
+                }
+                return Integer.compare(bNode.depth, aNode.depth);
+            });
+            for (int child : node.children) {
+                Node next = nodes.get(child);
+                next.stack = node.stack + stack;
+                stack++;
+
+                max = Math.max(max, next.stack);
+            }
+        }
+
+        bw.write(String.valueOf(max));
+
+        br.close();
+        bw.close();
     }
 }
