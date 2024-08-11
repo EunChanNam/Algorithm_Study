@@ -1,44 +1,29 @@
-import java.util.*;
 class Solution {
-
-    private int[] uf;
-
-    public int solution(int n, int[][] costs) {
+    public int solution(String name) {
         int answer = 0;
 
-        uf = new int[n];
-        for (int i=0; i < n; i++) {
-            uf[i] = i;
-        }
+        int move = name.length() - 1;
+        for (int i=0; i < name.length(); i++) {
+            char ch = name.charAt(i);
+            answer += getCost(ch);
 
-        Arrays.sort(costs, (a, b) -> Integer.compare(a[2], b[2]));
-
-        for (int i=0; i < costs.length; i++) {
-            int[] now = costs[i];
-            int a = now[0];
-            int b = now[1];
-            int cost = now[2];
-
-            if (union(a, b)) {
-                answer += cost;
+            int idx = i + 1;
+            int cnt = 0;
+            while (idx < name.length() && name.charAt(idx) == 'A') {
+                cnt++;
+                idx++;
             }
+
+            move = Math.min(move, i - cnt + name.length() - 1);
+            move = Math.min(move, (name.length() - idx) - cnt + name.length() - 1);
         }
 
-        return answer;
+        return answer + move;
     }
 
-    private int find(int a) {
-        if (uf[a] == a) return a;
-        return uf[a] = find(uf[a]);
-    }
-
-    private boolean union(int a, int b) {
-        int fa = find(a);
-        int fb = find(b);
-        if (fa != fb) {
-            uf[fa] = fb;
-            return true;
-        }
-        return false;
+    private int getCost(char target) {
+        int a = target - 'A';
+        int b = 'Z' - target + 1;
+        return Math.min(a, b);
     }
 }
