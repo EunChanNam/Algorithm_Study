@@ -1,49 +1,48 @@
 import java.util.*;
 class Solution {
     private static class Node {
-        int height;
-        int idx;
-        public Node(int height, int idx) {
-            this.height = height;
-            this.idx = idx;
+        int profit;
+        int cap;
+        public Node(int profit, int cap) {
+            this.profit = profit;
+            this.cap = cap;
         }
     }
-
-    public int maximalRectangle(char[][] matrix) {
-        int n = matrix.length;
-        int m = matrix[0].length;
-
-        int max = 0;
-        int[] height = new int[m];
-        for (int y=0; y < n; y++) {
-            for (int x=0; x < m; x++) {
-                char k = matrix[y][x];
-                if (k == '1') height[x]++;
-                else height[x] = 0;
+    public int findMaximizedCapital(int k, int w, int[] profits, int[] capital) {
+        PriorityQueue<Node> pq = new PriorityQueue<>(
+            (a, b) -> {
+                if (a.profit == b.profit) return Integer.compare(a.cap, b.cap);
+                return Integer.compare(b.profit, a.profit);
             }
+        );
 
-            List<Node> list = new ArrayList<>();
-            for (int x=0; x < m; x++) {
-                max = Math.max(max, height[x]);
-                if (height[x] == 0) list = new ArrayList<>();
+        int n = profits.length;
+        List<Node> list = new ArrayList<>();
+        for (int i=0; i < n; i++) {
+            int profit = profits[i];
+            int cap = capital[i];
+            list.add(new Node(profit, cap));
+        }
 
-                boolean flag = false;
-                boolean flag2 = true;
-                int maxHeight = 0;
-                for (Node node : list) {
-                    maxHeight = Math.max(maxHeight, node.height);
-                    int witdh = x - node.idx + 1;
-                    int h = Math.min(node.height, height[x]);
-                    if (height[x] < node.height) {
-                        node.height = height[x];
-                    }
+        list.sort((a, b) -> Integer.compare(a.cap, b.cap));
 
-                    max = Math.max(max, witdh * h);
-                }
-                if (list.isEmpty() || height[x] > maxHeight) list.add(new Node(height[x], x));
+        int idx = 0;
+        while (idx < n && w >= list.get(idx).cap) {
+            pq.add(list.get(idx));
+            idx++;
+        }
+
+        while (k > 0 && !pq.isEmpty()) {
+            Node now = pq.poll();
+            w += now.profit;
+            k--;
+
+            while (idx < n && w >= list.get(idx).cap) {
+                pq.add(list.get(idx));
+                idx++;
             }
         }
 
-        return max;
+        return w;
     }
 }
