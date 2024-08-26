@@ -1,48 +1,66 @@
 import java.util.*;
 class Solution {
+
     private static class Node {
-        int profit;
-        int cap;
-        public Node(int profit, int cap) {
-            this.profit = profit;
-            this.cap = cap;
+        String word;
+        int level;
+        public Node(String word, int level) {
+            this.word = word;
+            this.level = level;
         }
     }
-    public int findMaximizedCapital(int k, int w, int[] profits, int[] capital) {
-        PriorityQueue<Node> pq = new PriorityQueue<>(
-            (a, b) -> {
-                if (a.profit == b.profit) return Integer.compare(a.cap, b.cap);
-                return Integer.compare(b.profit, a.profit);
-            }
-        );
 
-        int n = profits.length;
-        List<Node> list = new ArrayList<>();
-        for (int i=0; i < n; i++) {
-            int profit = profits[i];
-            int cap = capital[i];
-            list.add(new Node(profit, cap));
+    public int solution(String begin, String target, String[] wordArr) {
+        int answer = 0;
+
+        Map<String, List<String>> map = new HashMap<>();
+        int n = begin.length();
+
+        List<String> words = new ArrayList<>();
+        for (String word : wordArr) {
+            words.add(word);
         }
+        words.add(begin);
 
-        list.sort((a, b) -> Integer.compare(a.cap, b.cap));
+        for (String word : words) {
+            if (!map.containsKey(word)) map.put(word, new ArrayList<>());
+            for (String t: words) {
+                if (word.equals(t) || t.equals(begin)) continue;
 
-        int idx = 0;
-        while (idx < n && w >= list.get(idx).cap) {
-            pq.add(list.get(idx));
-            idx++;
-        }
-
-        while (k > 0 && !pq.isEmpty()) {
-            Node now = pq.poll();
-            w += now.profit;
-            k--;
-
-            while (idx < n && w >= list.get(idx).cap) {
-                pq.add(list.get(idx));
-                idx++;
+                int sameCnt = 0;
+                for (int i=0; i < n; i++) {
+                    char a = word.charAt(i);
+                    char b = t.charAt(i);
+                    if (a == b) {
+                        sameCnt++;
+                    }
+                }
+                if (sameCnt == n - 1) {
+                    map.get(word).add(t);
+                }
             }
         }
 
-        return w;
+        Set<String> set = new HashSet<>();
+        set.add(begin);
+
+        Queue<Node> que = new ArrayDeque<>();
+        que.offer(new Node(begin, 0));
+
+        while (!que.isEmpty()) {
+            Node now = que.poll();
+            if (now.word.equals(target)){
+                return now.level;
+            }
+
+            List<String> nextList = map.get(now.word);
+            for (String next : nextList) {
+                if (set.contains(next)) continue;
+                set.add(next);
+                que.offer(new Node(next, now.level + 1));
+            }
+        }
+
+        return answer;
     }
 }
