@@ -1,66 +1,189 @@
-import java.util.*;
-class Solution {
+package hello;
 
-    private static class Node {
-        String word;
-        int level;
-        public Node(String word, int level) {
-            this.word = word;
-            this.level = level;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.StringTokenizer;
+
+public class Main {
+
+    private static int n;
+    private static int[][] map;
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+
+        StringTokenizer st = new StringTokenizer(br.readLine());
+
+        n = Integer.parseInt(st.nextToken());
+        map = new int[n][n];
+
+        for (int y = 0; y < n; y++) {
+            st = new StringTokenizer(br.readLine());
+            for (int x = 0; x < n; x++) {
+                map[y][x] = Integer.parseInt(st.nextToken());
+            }
+        }
+
+        dfs(map, 0, 0);
+
+        bw.write(String.valueOf(max));
+
+        br.close();
+        bw.close();
+    }
+
+    private static int max = Integer.MIN_VALUE;
+    private static void dfs(int[][] map, int dir, int level) {
+        int[][] tempMap = copyMap(map);
+        if (level != 0) {
+            move(dir, tempMap);
+        }
+
+        if (level == 5) {
+            for (int y = 0; y < n; y++) {
+                for (int x = 0; x < n; x++) {
+                    max = Math.max(max, tempMap[y][x]);
+                }
+            }
+            return;
+        }
+
+        for (int i = 1; i <= 4; i++) {
+            dfs(tempMap, i, level + 1);
         }
     }
 
-    public int solution(String begin, String target, String[] wordArr) {
-        int answer = 0;
-
-        Map<String, List<String>> map = new HashMap<>();
-        int n = begin.length();
-
-        List<String> words = new ArrayList<>();
-        for (String word : wordArr) {
-            words.add(word);
+    private static int[][] copyMap(int[][] origin) {
+        int[][] temp = new int[n][n];
+        for (int y = 0; y < n; y++) {
+            System.arraycopy(origin[y], 0, temp[y], 0, n);
         }
-        words.add(begin);
+        return temp;
+    }
 
-        for (String word : words) {
-            if (!map.containsKey(word)) map.put(word, new ArrayList<>());
-            for (String t: words) {
-                if (word.equals(t) || t.equals(begin)) continue;
-
-                int sameCnt = 0;
-                for (int i=0; i < n; i++) {
-                    char a = word.charAt(i);
-                    char b = t.charAt(i);
-                    if (a == b) {
-                        sameCnt++;
+    private static void move(int dir, int[][] map) {
+        if (dir == 1) {
+            for (int x = 0; x < n; x++) {
+                for (int i = 0; i < n; i++) {
+                    if (isZero(map[i][x])) {
+                        continue;
+                    }
+                    for (int j = i + 1; j < n; j++) {
+                        if (xMergeIf(map, x, i, j)) {
+                            continue;
+                        }
+                        break;
                     }
                 }
-                if (sameCnt == n - 1) {
-                    map.get(word).add(t);
+            }
+            for (int x = 0; x < n; x++) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = i + 1; j < n; j++) {
+                        swapIf(i, x, j, x, map);
+                    }
+                }
+            }
+        } else if (dir == 2) {
+            for (int x = 0; x < n; x++) {
+                for (int i = n - 1; i >= 0; i--) {
+                    if (isZero(map[i][x])) {
+                        continue;
+                    }
+                    for (int j = i - 1; j >= 0; j--) {
+                        if (xMergeIf(map, x, i, j)) {
+                            continue;
+                        }
+                        break;
+                    }
+                }
+            }
+            for (int x = 0; x < n; x++) {
+                for (int i = n - 1; i >= 0; i--) {
+                    for (int j = i - 1; j >= 0; j--) {
+                        swapIf(i, x, j, x, map);
+                    }
+                }
+            }
+        } else if (dir == 3) {
+            for (int y = 0; y < n; y++) {
+                for (int i = 0; i < n; i++) {
+                    if (isZero(map[y][i])) {
+                        continue;
+                    }
+                    for (int j = i + 1; j < n; j++) {
+                        if (yMergeIf(map, y, i, j)) {
+                            continue;
+                        }
+                        break;
+                    }
+                }
+            }
+            for (int y = 0; y < n; y++) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = i + 1; j < n; j++) {
+                        swapIf(y, i, y, j, map);
+                    }
+                }
+            }
+        } else if (dir == 4) {
+            for (int y = 0; y < n; y++) {
+                for (int i = n - 1; i >= 0; i--) {
+                    if (isZero(map[y][i])) {
+                        continue;
+                    }
+                    for (int j = i - 1; j >= 0; j--) {
+                        if (yMergeIf(map, y, i, j)) {
+                            continue;
+                        }
+                        break;
+                    }
+                }
+            }
+            for (int y = 0; y < n; y++) {
+                for (int i = n - 1; i >= 0; i--) {
+                    for (int j = i - 1; j >= 0; j--) {
+                        swapIf(y, i, y, j, map);
+                    }
                 }
             }
         }
+    }
 
-        Set<String> set = new HashSet<>();
-        set.add(begin);
+    private static boolean isZero(int value) {
+        return value == 0;
+    }
 
-        Queue<Node> que = new ArrayDeque<>();
-        que.offer(new Node(begin, 0));
-
-        while (!que.isEmpty()) {
-            Node now = que.poll();
-            if (now.word.equals(target)){
-                return now.level;
-            }
-
-            List<String> nextList = map.get(now.word);
-            for (String next : nextList) {
-                if (set.contains(next)) continue;
-                set.add(next);
-                que.offer(new Node(next, now.level + 1));
-            }
+    private static boolean yMergeIf(int[][] map, int y, int i, int j) {
+        int now = map[y][i];
+        int next = map[y][j];
+        if (next == 0) return true;
+        if (now == next) {
+            map[y][i] += map[y][j];
+            map[y][j] = 0;
         }
+        return false;
+    }
 
-        return answer;
+    private static boolean xMergeIf(int[][] map, int x, int i, int j) {
+        int now = map[i][x];
+        int next = map[j][x];
+        if (next == 0) return true;
+        if (now == next) {
+            map[i][x] += map[j][x];
+            map[j][x] = 0;
+        }
+        return false;
+    }
+
+    private static void swapIf(int y, int x, int ny, int nx, int[][] map) {
+        if (map[y][x] == 0 && map[ny][nx] != 0) {
+            int temp = map[y][x];
+            map[y][x] = map[ny][nx];
+            map[ny][nx] = temp;
+        }
     }
 }
