@@ -1,47 +1,35 @@
-import java.util.*;
-import java.util.stream.Collectors;
 class Solution {
-    public int solution(int[] cards) {
+    public int solution(int m, int n, int[][] puddles) {
         int answer = 0;
 
-        int n = cards.length;
-        int[] uf = new int[n + 1];
-        for (int i=0; i <= n; i++) {
-            uf[i] = i;
+        int[][] map = new int[n][m];
+
+        for (int[] puddle :puddles) {
+            int y = puddle[1] - 1;
+            int x = puddle[0] - 1;
+            map[y][x] = -1;
         }
 
-        for (int i=0; i < n; i++) {
-            int k = i + 1;
-            union(k, cards[i], uf);
+        map[0][0] = 1;
+
+        for (int y=0; y < n; y++) {
+            for (int x=0; x < m; x++) {
+                if (map[y][x] == -1) continue;
+                int up = 0;
+                int down = 0;
+                if (y > 0 && map[y - 1][x] != -1) {
+                    up = map[y - 1][x];
+                }
+                if (x > 0 && map[y][x - 1] != -1) {
+                    down = map[y][x - 1];
+                }
+
+                map[y][x] += (up + down) % 1000000007;
+            }
         }
 
-        Map<Integer, Integer> map = new HashMap<>();
-
-        for (int card : cards) {
-            int group = find(card, uf);
-            map.put(group, map.getOrDefault(group, 0) + 1);
-        }
-
-        List<Integer> list = map.values().stream().collect(Collectors.toList());
-        if (list.size() == 1) {
-            return answer;
-        }
-
-        list.sort((a, b) -> Integer.compare(b, a));
-        answer = list.get(0) * list.get(1);
+        answer = map[n - 1][m - 1];
 
         return answer;
-    }
-
-    private int find(int a, int[] uf) {
-        if (uf[a] == a) return a;
-        return uf[a] = find(uf[a], uf);
-    }
-
-    private void union(int a, int b, int[] uf) {
-        int fa = find(a, uf);
-        int fb = find(b, uf);
-
-        if (fa != fb) uf[fa] = fb;
     }
 }
